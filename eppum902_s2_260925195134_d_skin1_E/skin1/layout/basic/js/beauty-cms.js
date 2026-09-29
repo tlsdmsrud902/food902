@@ -282,7 +282,16 @@
     if (el.getAttribute('src') === url) return el;
     el.removeAttribute('srcset');
     if (el.hasAttribute('data-cms-reset')) el.removeAttribute('style');
-    el.setAttribute('src', url);
+    // 이미 사진이 보이는 상태에서 다시 바꾸는 경우(저장본 적용 뒤 게시판에서 새 내용을 받아온 경우)에는
+    // 새 사진을 먼저 받아 두었다가 갈아끼운다. 그러지 않으면 옛 사진이 보였다가 새 사진으로 바뀐다.
+    if (state.smooth && el.tagName === 'IMG' && el.getAttribute('src')) {
+      var target = el, pre = new Image(), swapped = false;
+      var swap = function () { if (swapped) return; swapped = true; target.setAttribute('src', url); };
+      pre.onload = swap; pre.onerror = swap; setTimeout(swap, 3000);
+      pre.src = url;
+    } else {
+      el.setAttribute('src', url);
+    }
     el.setAttribute('data-cms-replaced', '');
     if (el.tagName === 'IMG' && el.closest('[data-cms-item]') && !el.hasAttribute('data-cms-keep-alt')) el.alt = '';
     // 장면 속 상품처럼 사진 비율로 칸 모양을 정하는 곳은 새 사진 비율을 따른다 (점 위치 % 가 사진에 맞게)
@@ -497,7 +506,7 @@
     placeUnits(want);
   }
 
-  var state = { map: null, applied: false, waiters: [], orderMoved: false };
+  var state = { map: null, applied: false, waiters: [], orderMoved: false, smooth: false };
   function sections() { return Array.from(document.querySelectorAll('[data-cms]')); }
   function names() { return sections().map(function (s) { return s.getAttribute('data-cms'); }).concat(orderName() ? [orderName()] : []).sort(function (a, b) { return norm(b).length - norm(a).length; }); }
   function knownLabels(sec) {
@@ -513,6 +522,8 @@
   }
   function applyAll(map) {
     state.map = map;
+    // 두 번째 이후 적용(저장본을 보여 준 뒤 게시판에서 새 내용을 받아온 경우)에는 사진을 미리 받아 두고 바꾼다
+    state.smooth = state.applied;
     sections().forEach(function (sec) {
       var post = map[sec.getAttribute('data-cms')];
       sec.classList.toggle('cms-has-post', !!post);
@@ -867,9 +878,11 @@
     if (EDIT && home) startEdit();
     if (BOARD_PAGE) loadEditor();
   }
-  // 캐시가 없는 첫 방문에는 바꿀 글자·사진을 잠깐(최대 1.2초) 가려 기본값이 번쩍이지 않게 한다
+  // 바꿀 글자·사진을 잠깐(최대 1.2초) 가려 기본값이 번쩍이지 않게 한다.
+  // 캐시가 있을 때도 가린다 — 캐시 적용은 DOMContentLoaded 뒤라서, 그 전에 HTML 의 기본 사진이 한 번 그려진다.
+  // (캐시가 있으면 applyAll 이 곧바로 이 가림을 걷으므로 눈에 띄는 지연은 없다)
   var salePage = /\/product\/list\.html/.test(location.pathname) && (qs.match(/[?&]cate_no=(\d+)/) || [])[1] === String((SC.sale || {}).categoryNo || 27);
-  if (BOARD && !EDIT && (/^\/(index\.html)?$/.test(location.pathname) || salePage) && !(lsGet(CACHE_KEY) || {}).map) {
+  if (BOARD && !EDIT && (/^\/(index\.html)?$/.test(location.pathname) || salePage)) {
     html.classList.add('cms-wait');
     setTimeout(function () { html.classList.remove('cms-wait'); }, 1200);
   }
