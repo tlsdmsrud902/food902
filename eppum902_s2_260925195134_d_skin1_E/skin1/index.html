@@ -208,7 +208,7 @@
 
   <!-- 9. 장면 속 상품 (Shop the look) : 스크롤하면 장면이 한 장씩 옆으로 넘어가고, 사진 속 + 를 누르면 상품 구매 레이어가 열린다 (beauty-cozy-home.js initLooks)
        + 위치(--x/--y)는 사진 원본 비율 기준 %, 상품 정보는 아래 cz-looks-data 에 있다.
-       data-prd 는 임시 번호(p01 = 12 … p30 = 41) : 카페24 에 상품을 등록한 뒤 실제 상품번호로 바꾼다 -->
+       data-prd 는 카페24 실제 상품번호(p01 = 11 … p30 = 40, 2026-09-29 등록) -->
   <section class="cz-looks" id="cz-looks" aria-labelledby="cz-looks-title" data-cms="장면 속 상품" data-cms-help="상품 점은 한 줄에 하나씩 「상품번호 가로% 세로%」로 써요. 상품번호만 적으면 이름·가격·사진은 쇼핑몰 상품에서 자동으로 가져와요. 메인 편집 모드에서 사진을 누르면 그 자리의 가로·세로 %가 복사돼요.">
    <div class="cz-looks__pin" data-looks-pin>
     <div class="cz-looks__stage">
@@ -221,15 +221,15 @@
         <h3 data-cms-text="제목">아침 7시,<br>맑은 피부를 여는 시간</h3>
         <p class="cz-look__meta" data-cms-text="설명">오전 7시 · 욕실 선반 · 5분 루틴</p>
         <ul class="cz-look__list">
-         <li><button type="button" data-prd="13"><span>비타C 울트라 글로우 세럼</span><b>38,000원</b></button></li>
-         <li><button type="button" data-prd="39"><span>내추럴 페이셜 솝</span><b>12,000원</b></button></li>
+         <li><button type="button" data-prd="12"><span>비타C 울트라 글로우 세럼</span><b>38,000원</b></button></li>
+         <li><button type="button" data-prd="38"><span>내추럴 페이셜 솝</span><b>12,000원</b></button></li>
         </ul>
         <a class="cz-btn cz-btn--soft" href="/product/list.html?cate_no=24" data-cms-text="버튼" data-cms-href="버튼 링크">스킨케어 더 보기<span><svg><use href="#cz-arrow"/></svg></span></a>
        </div>
        <figure class="cz-look__media">
         <img data-cms-src="사진" src="/SkinImg/beauty/scene-serum.webp" alt="햇살 드는 욕실 선반 위의 글로우 세럼과 솝" width="1672" height="941" loading="lazy">
-        <button class="cz-look__spot" type="button" data-prd="13" style="--x:50%;--y:60%" aria-label="비타C 울트라 글로우 세럼 보기"></button>
-        <button class="cz-look__spot" type="button" data-prd="39" style="--x:76%;--y:66%" aria-label="내추럴 페이셜 솝 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="12" style="--x:50%;--y:60%" aria-label="비타C 울트라 글로우 세럼 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="38" style="--x:76%;--y:66%" aria-label="내추럴 페이셜 솝 보기"></button>
        </figure>
       </article>
       <article class="cz-look" aria-label="02 진정" style="--ar:1.777" data-cms-item data-cms-spots="상품 점" data-cms-ar>
@@ -238,17 +238,17 @@
         <h3 data-cms-text="제목">예민한 날엔<br>꽃잎처럼 순하게</h3>
         <p class="cz-look__meta" data-cms-text="설명">저녁 9시 · 진정 케어 · 10분</p>
         <ul class="cz-look__list">
-         <li><button type="button" data-prd="12"><span>로즈 & 알로에 보태니컬 세럼</span><b>32,000원</b></button></li>
-         <li><button type="button" data-prd="20"><span>로즈 페탈 토너</span><b>19,000원</b></button></li>
-         <li><button type="button" data-prd="21"><span>알로에 수딩 젤</span><b>14,000원</b></button></li>
+         <li><button type="button" data-prd="11"><span>로즈 & 알로에 보태니컬 세럼</span><b>32,000원</b></button></li>
+         <li><button type="button" data-prd="19"><span>로즈 페탈 토너</span><b>19,000원</b></button></li>
+         <li><button type="button" data-prd="20"><span>알로에 수딩 젤</span><b>14,000원</b></button></li>
         </ul>
         <a class="cz-btn cz-btn--soft" href="/product/search.html?keyword=보태니컬" data-cms-text="버튼" data-cms-href="버튼 링크">보태니컬 케어 더 보기<span><svg><use href="#cz-arrow"/></svg></span></a>
        </div>
        <figure class="cz-look__media">
         <img data-cms-src="사진" src="/SkinImg/beauty/scene-botanical.webp" alt="장미 꽃잎과 알로에 옆에 놓인 로즈 세럼" width="1672" height="941" loading="lazy">
-        <button class="cz-look__spot" type="button" data-prd="12" style="--x:66%;--y:62%" aria-label="로즈 & 알로에 보태니컬 세럼 보기"></button>
-        <button class="cz-look__spot" type="button" data-prd="20" style="--x:24%;--y:64%" aria-label="로즈 페탈 토너 보기"></button>
-        <button class="cz-look__spot" type="button" data-prd="21" style="--x:47%;--y:60%" aria-label="알로에 수딩 젤 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="11" style="--x:66%;--y:62%" aria-label="로즈 & 알로에 보태니컬 세럼 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="19" style="--x:24%;--y:64%" aria-label="로즈 페탈 토너 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="20" style="--x:47%;--y:60%" aria-label="알로에 수딩 젤 보기"></button>
        </figure>
       </article>
       <article class="cz-look" aria-label="03 컬러" style="--ar:1.777" data-cms-item data-cms-spots="상품 점" data-cms-ar>
@@ -257,15 +257,15 @@
         <h3 data-cms-text="제목">오늘의 기분은<br>차분한 뉴트럴로</h3>
         <p class="cz-look__meta" data-cms-text="설명">주말 오후 · 약속 전 · 15분</p>
         <ul class="cz-look__list">
-         <li><button type="button" data-prd="23"><span>뉴트럴 에센셜 아이섀도 팔레트</span><b>39,000원</b></button></li>
-         <li><button type="button" data-prd="18"><span>래디언스 페이셜 오일</span><b>31,000원</b></button></li>
+         <li><button type="button" data-prd="22"><span>뉴트럴 에센셜 아이섀도 팔레트</span><b>39,000원</b></button></li>
+         <li><button type="button" data-prd="17"><span>래디언스 페이셜 오일</span><b>31,000원</b></button></li>
         </ul>
         <a class="cz-btn cz-btn--soft" href="/product/list.html?cate_no=25" data-cms-text="버튼" data-cms-href="버튼 링크">메이크업 더 보기<span><svg><use href="#cz-arrow"/></svg></span></a>
        </div>
        <figure class="cz-look__media">
         <img data-cms-src="사진" src="/SkinImg/beauty/scene-palette.webp" alt="린넨 위에 펼쳐 둔 아이섀도 팔레트와 페이셜 오일" width="1672" height="941" loading="lazy">
-        <button class="cz-look__spot" type="button" data-prd="23" style="--x:50%;--y:55%" aria-label="뉴트럴 에센셜 아이섀도 팔레트 보기"></button>
-        <button class="cz-look__spot" type="button" data-prd="18" style="--x:88%;--y:62%" aria-label="래디언스 페이셜 오일 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="22" style="--x:50%;--y:55%" aria-label="뉴트럴 에센셜 아이섀도 팔레트 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="17" style="--x:88%;--y:62%" aria-label="래디언스 페이셜 오일 보기"></button>
        </figure>
       </article>
       <article class="cz-look" aria-label="04 화장대" style="--ar:.8" data-cms-item data-cms-spots="상품 점" data-cms-ar>
@@ -274,15 +274,15 @@
         <h3 data-cms-text="제목">나만의 화장대,<br>필요한 건 여기에</h3>
         <p class="cz-look__meta" data-cms-text="설명">첫 화장대 · 자리 정리하기</p>
         <ul class="cz-look__list">
-         <li><button type="button" data-prd="29"><span>소프트 메이크업 브러시 세트</span><b>42,000원</b></button></li>
-         <li><button type="button" data-prd="37"><span>세라믹 브러시 홀더</span><b>15,000원</b></button></li>
+         <li><button type="button" data-prd="28"><span>소프트 메이크업 브러시 세트</span><b>42,000원</b></button></li>
+         <li><button type="button" data-prd="36"><span>세라믹 브러시 홀더</span><b>15,000원</b></button></li>
         </ul>
         <a class="cz-btn cz-btn--soft" href="/product/search.html?keyword=브러시" data-cms-text="버튼" data-cms-href="버튼 링크">브러시 · 소품 더 보기<span><svg><use href="#cz-arrow"/></svg></span></a>
        </div>
        <figure class="cz-look__media">
         <img data-cms-src="사진" src="/SkinImg/beauty/portrait-vanity.webp" alt="세라믹 홀더에 꽂힌 메이크업 브러시와 거울" width="1122" height="1402" loading="lazy">
-        <button class="cz-look__spot" type="button" data-prd="29" style="--x:34%;--y:40%" aria-label="소프트 메이크업 브러시 세트 보기"></button>
-        <button class="cz-look__spot" type="button" data-prd="37" style="--x:34%;--y:76%" aria-label="세라믹 브러시 홀더 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="28" style="--x:34%;--y:40%" aria-label="소프트 메이크업 브러시 세트 보기"></button>
+        <button class="cz-look__spot" type="button" data-prd="36" style="--x:34%;--y:76%" aria-label="세라믹 브러시 홀더 보기"></button>
        </figure>
       </article>
      </div>
@@ -304,15 +304,15 @@
     </div>
    </div>
    <script type="application/json" id="cz-looks-data">{
-    "13":{"name":"비타C 울트라 글로우 세럼","cat":"SKINCARE · 세럼","img":"p02","price":38000,"retail":45000,"desc":"비타민C와 히알루론산을 담은 가벼운 세럼. 아침마다 두세 방울로 맑은 광채를 더해요."},
-    "39":{"name":"내추럴 페이셜 솝","cat":"SKINCARE · 클렌징","img":"p28","price":12000,"desc":"식물성 오일로 만든 순한 페이셜 솝. 부드러운 거품으로 당김 없이 씻어 내요."},
-    "12":{"name":"로즈 & 알로에 보태니컬 세럼","cat":"SKINCARE · 세럼","img":"p01","price":32000,"desc":"장미와 알로에를 담은 보태니컬 세럼. 예민한 날에도 부담 없이 쓰기 좋아요."},
-    "20":{"name":"로즈 페탈 토너","cat":"SKINCARE · 토너","img":"p09","price":19000,"desc":"장미 꽃잎 추출물을 담은 촉촉한 토너. 세안 직후 첫 단계에 가볍게 발라요."},
-    "21":{"name":"알로에 수딩 젤","cat":"SKINCARE · 진정","img":"p10","price":14000,"retail":18000,"desc":"알로에를 듬뿍 담은 수딩 젤. 햇볕을 받은 날 얼굴과 몸에 시원하게 발라요."},
-    "23":{"name":"뉴트럴 에센셜 아이섀도 팔레트","cat":"MAKEUP · 아이","img":"p12","price":39000,"retail":48000,"desc":"매일 쓰기 좋은 뉴트럴 12색 팔레트. 매트와 쉬머로 은은한 음영을 만들어요."},
-    "18":{"name":"래디언스 페이셜 오일","cat":"SKINCARE · 오일","img":"p07","price":31000,"retail":39000,"desc":"가볍게 스며드는 페이셜 오일. 크림에 한 방울 섞어 윤기를 더해요."},
-    "29":{"name":"소프트 메이크업 브러시 세트","cat":"MAKEUP · 브러시","img":"p18","price":42000,"desc":"부드러운 모의 메이크업 브러시 세트. 파운데이션부터 아이섀도까지 한 번에."},
-    "37":{"name":"세라믹 브러시 홀더","cat":"BODY · 소품","img":"p26","price":15000,"desc":"손으로 빚은 느낌의 세라믹 홀더. 브러시와 펜슬을 화장대에 깔끔하게 세워 둬요."}
+    "12":{"name":"비타C 울트라 글로우 세럼","cat":"SKINCARE · 세럼","img":"p02","price":38000,"retail":45000,"desc":"비타민C와 히알루론산을 담은 가벼운 세럼. 아침마다 두세 방울로 맑은 광채를 더해요."},
+    "38":{"name":"내추럴 페이셜 솝","cat":"SKINCARE · 클렌징","img":"p28","price":12000,"desc":"식물성 오일로 만든 순한 페이셜 솝. 부드러운 거품으로 당김 없이 씻어 내요."},
+    "11":{"name":"로즈 & 알로에 보태니컬 세럼","cat":"SKINCARE · 세럼","img":"p01","price":32000,"desc":"장미와 알로에를 담은 보태니컬 세럼. 예민한 날에도 부담 없이 쓰기 좋아요."},
+    "19":{"name":"로즈 페탈 토너","cat":"SKINCARE · 토너","img":"p09","price":19000,"desc":"장미 꽃잎 추출물을 담은 촉촉한 토너. 세안 직후 첫 단계에 가볍게 발라요."},
+    "20":{"name":"알로에 수딩 젤","cat":"SKINCARE · 진정","img":"p10","price":14000,"retail":18000,"desc":"알로에를 듬뿍 담은 수딩 젤. 햇볕을 받은 날 얼굴과 몸에 시원하게 발라요."},
+    "22":{"name":"뉴트럴 에센셜 아이섀도 팔레트","cat":"MAKEUP · 아이","img":"p12","price":39000,"retail":48000,"desc":"매일 쓰기 좋은 뉴트럴 12색 팔레트. 매트와 쉬머로 은은한 음영을 만들어요."},
+    "17":{"name":"래디언스 페이셜 오일","cat":"SKINCARE · 오일","img":"p07","price":31000,"retail":39000,"desc":"가볍게 스며드는 페이셜 오일. 크림에 한 방울 섞어 윤기를 더해요."},
+    "28":{"name":"소프트 메이크업 브러시 세트","cat":"MAKEUP · 브러시","img":"p18","price":42000,"desc":"부드러운 모의 메이크업 브러시 세트. 파운데이션부터 아이섀도까지 한 번에."},
+    "36":{"name":"세라믹 브러시 홀더","cat":"BODY · 소품","img":"p26","price":15000,"desc":"손으로 빚은 느낌의 세라믹 홀더. 브러시와 펜슬을 화장대에 깔끔하게 세워 둬요."}
    }</script>
   </section>
 
