@@ -344,10 +344,10 @@ window.STORE_CONTENT = {
 			   remain 은 운영자가 관리자의 발급 현황을 보고 고치거나, 아래 remainUrl 로 자동 갱신할 수 있습니다.
 			   remain 이 0 인 쿠폰은 뽑기에서 제외되고, 나머지 쿠폰이 남은 수량 비율대로 뽑힙니다. */
 			coupons: [
-				{ no: '6086342005700000318', label: '50% 쿠폰', total: 10,  remain: 10 },
-				{ no: '6086342015600000319', label: '20% 쿠폰', total: 30,  remain: 30 },
-				{ no: '6086342019800000320', label: '10% 쿠폰', total: 100, remain: 100 },
-				{ no: '6086342024200000321', label: '5% 쿠폰',  total: 300, remain: 300 }
+				{ no: '6086379801100002973', label: '50% 쿠폰', total: 10,  remain: 10 },
+				{ no: '6086379802000002974', label: '20% 쿠폰', total: 30,  remain: 30 },
+				{ no: '6086379802000002975', label: '10% 쿠폰', total: 100, remain: 100 },
+				{ no: '6086379802100002976', label: '5% 쿠폰',  total: 300, remain: 300 }
 			],
 			remainUrl: 'https://soft-sea-0571.senior-sujin.workers.dev',                   // (선택) 남은 수량 공용 카운터 주소. 판매자가 알려 준 주소(https://….workers.dev)만 넣으면 모든 방문자에게 같은 남은 수량이 보인다. 비워 두면 위 remain 숫자를 그대로 쓴다
 			stockTitle: '남은 쿠폰',
