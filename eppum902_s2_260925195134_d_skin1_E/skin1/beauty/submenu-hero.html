@@ -1,0 +1,47 @@
+<section class="beauty-page-hero beauty-menu-hero" aria-label="컬렉션 안내" data-cms="목록 위 큰 배너" data-cms-adapter="menuHero" data-cms-page="목록 공통">
+ <img src="/SkinImg/beauty/scene-vanity.webp" alt="브러시와 거울이 놓인 화장대" width="1600" height="900" fetchpriority="high">
+ <div><small>THE EVERYDAY COLLECTION</small><h1>Pretty things.<br>For every day.</h1><p>씻고, 바르고, 가꾸는 하루.<br>나의 피부와 취향에 꼭 맞는 뷰티를 찾아보세요.</p>
+ <nav aria-label="컬렉션 메뉴"><a data-beauty-menu="all" href="/product/list.html?cate_no=28">전체상품</a><a data-beauty-menu="skincare" href="/product/list.html?cate_no=24">스킨케어</a><a data-beauty-menu="makeup" href="/product/list.html?cate_no=25">메이크업</a><a data-beauty-menu="body" href="/product/list.html?cate_no=26">바디/헤어</a><a data-beauty-menu="review" href="/board/product/list.html?board_no=4">리뷰</a></nav></div>
+</section>
+<!-- 상품분류 목록에서만 보이는 검색창 (상품검색 페이지는 자체 검색창이 있다) -->
+<form class="beauty-list-search" action="/product/search.html" method="get" role="search" hidden>
+ <label for="beautyListKeyword" class="displaynone">상품 검색</label>
+ <input id="beautyListKeyword" name="keyword" type="search" placeholder="찾으시는 상품을 검색해 보세요" autocomplete="off">
+ <button type="submit" aria-label="검색"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5" stroke-linecap="round"></path></svg></button>
+</form>
+<script>
+(function(){
+ var hero=document.querySelector('.beauty-menu-hero');if(!hero)return;
+ var params=new URLSearchParams(location.search),word=params.get('keyword')||'',path=location.pathname,board=path.indexOf('/board/')===0;
+ var catm=path.match(/\/category\/[^\/]+\/(\d+)/),cate=String(params.get('cate_no')||(catm&&catm[1])||'');
+ var list=/\/product\/list\.html$/.test(path)||!!catm;
+ // 게시판 : 리뷰(4) · 공지사항(1) · 자주묻는질문(3) · 상품문의(6) 은 같은 배너를 쓴다
+ var boardKey={'4':'review','1':'notice','3':'faq','6':'qna'}[params.get('board_no')];
+ if(board&&!boardKey){hero.remove();return;}
+ // SALE(27)은 전용 세일 화면이 따로 있다
+ if(list&&cate==='27'){hero.remove();return;}
+ // 상품분류 번호 : 28 전체 상품 · 24 스킨케어 · 25 메이크업 · 26 바디/헤어 (관리자 대분류)
+ var byCate={'28':'all','24':'skincare','25':'makeup','26':'body'};
+ var key=board?boardKey:list?(byCate[cate]||'all'):/바디|헤어|샴푸|핸드|선케어|네일/.test(word)?'body':/립|아이|섀도|마스카라|파운데이션|쿠션|파우더|브러시|메이크업/.test(word)?'makeup':/세럼|앰플|크림|토너|마스크|스킨|에센스|클렌/.test(word)?'skincare':'all';
+ // 배너 내용 : 게시판 화면 관리의 '목록 위 큰 배너' 글로 바꿀 수 있다 (beauty-cms.js 가 window.EPPUM_MENU_HERO 를 덮어쓴다)
+ var banners=window.EPPUM_MENU_HERO=window.EPPUM_MENU_HERO||{
+  all:['scene-vanity.webp','브러시와 거울이 놓인 화장대','THE EVERYDAY COLLECTION','Pretty things.<br>For every day.','씻고, 바르고, 가꾸는 하루.<br>나의 피부와 취향에 꼭 맞는 뷰티를 찾아보세요.'],
+  skincare:['scene-serum.webp','햇살 드는 욕실 선반 위의 글로우 세럼','THE SKINCARE COLLECTION','Healthy skin.<br>Quiet glow.','토너부터 세럼, 크림, 선케어까지.<br>매일 쌓이는 맑은 피부 습관.'],
+  makeup:['scene-palette.webp','린넨 위에 펼쳐 둔 뉴트럴 아이섀도 팔레트','THE MAKEUP COLLECTION','Soft colors.<br>Your own mood.','가볍게 톤을 정리하는 베이스부터<br>기분을 바꾸는 립 · 아이 컬러까지.'],
+  body:['scene-hair.webp','화장대 위 헤어 드라이어와 헤어 오일','THE BODY &amp; HAIR COLLECTION','From head.<br>To toe.','머리끝부터 손끝까지,<br>하루를 마무리하는 바디 · 헤어 케어.'],
+  review:['scene-lip.webp','핑크 립글로스를 바르는 모습','BEAUTY, SHARED','Real reviews.<br>Real glow.','직접 써 본 경험이 더 좋은 선택으로.<br>eppum 고객의 사용 후기를 만나보세요.'],
+  notice:['scene-model.webp','세럼 병 옆에 기대 쉬는 모델','NEWS &amp; NOTICE','Little news.<br>From eppum.','eppum의 새로운 소식과<br>꼭 알아 두실 안내를 전해 드려요.'],
+  faq:['scene-model.webp','세럼 병 옆에 기대 쉬는 모델','GOOD TO KNOW','Questions?<br>We have answers.','주문 · 배송 · 교환 · 반품에 대해<br>자주 묻는 질문을 모았어요.'],
+  qna:['scene-model.webp','세럼 병 옆에 기대 쉬는 모델','ASK US','Ask anything.<br>We are here to help.','상품과 피부 고민에 대해 궁금한 점을 남겨 주세요.<br>꼼꼼히 확인하고 답변드릴게요.']
+ },img=hero.querySelector('img');
+ function reveal(){hero.classList.add('is-ready')}
+ function fill(){
+  var data=banners[key]||banners.all;
+  hero.dataset.collection=key;img.alt=data[1];hero.querySelector('small').textContent=data[2];hero.querySelector('h1').innerHTML=data[3];hero.querySelector('p').innerHTML=data[4];
+  img.addEventListener('load',reveal,{once:true});img.addEventListener('error',reveal,{once:true});img.src=/^(https?:)?\/\/|^\//.test(data[0])?data[0]:'/SkinImg/beauty/'+data[0];if(img.complete&&img.naturalWidth)reveal();
+ }
+ if(window.EPPUM_CMS)window.EPPUM_CMS.ready(fill,1200);else fill();
+ var cur=hero.querySelector('[data-beauty-menu="'+key+'"]');if(cur)cur.setAttribute('aria-current','page');
+ var form=document.querySelector('.beauty-list-search');if(form&&list)form.hidden=false;
+}());
+</script>

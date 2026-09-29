@@ -1,0 +1,372 @@
+[
+ {
+  "code": "p01",
+  "product_no_temp": 12,
+  "group": "rec",
+  "cates": [
+   24
+  ],
+  "name": "로즈 & 알로에 보태니컬 세럼",
+  "price": 32000,
+  "retail": null,
+  "img": "p01.jpg"
+ },
+ {
+  "code": "p02",
+  "product_no_temp": 13,
+  "group": "new",
+  "cates": [
+   24,
+   27
+  ],
+  "name": "비타C 울트라 글로우 세럼",
+  "price": 38000,
+  "retail": 45000,
+  "img": "p02.jpg"
+ },
+ {
+  "code": "p03",
+  "product_no_temp": 14,
+  "group": "best",
+  "cates": [
+   24
+  ],
+  "name": "보태니컬 리프레싱 페이스 크림",
+  "price": 34000,
+  "retail": null,
+  "img": "p03.jpg"
+ },
+ {
+  "code": "p04",
+  "product_no_temp": 15,
+  "group": "rec",
+  "cates": [
+   24,
+   27
+  ],
+  "name": "오트밀 & 허니 수딩 마스크",
+  "price": 22000,
+  "retail": 28000,
+  "img": "p04.jpg"
+ },
+ {
+  "code": "p05",
+  "product_no_temp": 16,
+  "group": "new",
+  "cates": [
+   24
+  ],
+  "name": "래디언스 리페어 세럼",
+  "price": 36000,
+  "retail": null,
+  "img": "p05.jpg"
+ },
+ {
+  "code": "p06",
+  "product_no_temp": 17,
+  "group": "best",
+  "cates": [
+   24
+  ],
+  "name": "워터 글로우 앰플",
+  "price": 29000,
+  "retail": null,
+  "img": "p06.jpg"
+ },
+ {
+  "code": "p07",
+  "product_no_temp": 18,
+  "group": "rec",
+  "cates": [
+   24,
+   27
+  ],
+  "name": "래디언스 페이셜 오일",
+  "price": 31000,
+  "retail": 39000,
+  "img": "p07.jpg"
+ },
+ {
+  "code": "p08",
+  "product_no_temp": 19,
+  "group": "new",
+  "cates": [
+   24
+  ],
+  "name": "미니멀 데일리 선크림 SPF50+",
+  "price": 21000,
+  "retail": null,
+  "img": "p08.jpg"
+ },
+ {
+  "code": "p09",
+  "product_no_temp": 20,
+  "group": "best",
+  "cates": [
+   24
+  ],
+  "name": "로즈 페탈 토너",
+  "price": 19000,
+  "retail": null,
+  "img": "p09.jpg"
+ },
+ {
+  "code": "p10",
+  "product_no_temp": 21,
+  "group": "rec",
+  "cates": [
+   24,
+   27
+  ],
+  "name": "알로에 수딩 젤",
+  "price": 14000,
+  "retail": 18000,
+  "img": "p10.jpg"
+ },
+ {
+  "code": "p11",
+  "product_no_temp": 22,
+  "group": "new",
+  "cates": [
+   25
+  ],
+  "name": "벨벳 스킨 파운데이션",
+  "price": 35000,
+  "retail": null,
+  "img": "p11.jpg"
+ },
+ {
+  "code": "p12",
+  "product_no_temp": 23,
+  "group": "best",
+  "cates": [
+   25,
+   27
+  ],
+  "name": "뉴트럴 에센셜 아이섀도 팔레트",
+  "price": 39000,
+  "retail": 48000,
+  "img": "p12.jpg"
+ },
+ {
+  "code": "p13",
+  "product_no_temp": 24,
+  "group": "rec",
+  "cates": [
+   25
+  ],
+  "name": "볼륨 & 컬 마스카라",
+  "price": 19000,
+  "retail": null,
+  "img": "p13.jpg"
+ },
+ {
+  "code": "p14",
+  "product_no_temp": 25,
+  "group": "new",
+  "cates": [
+   25,
+   27
+  ],
+  "name": "젤리 핑크 립글로스",
+  "price": 16000,
+  "retail": 20000,
+  "img": "p14.jpg"
+ },
+ {
+  "code": "p15",
+  "product_no_temp": 26,
+  "group": "best",
+  "cates": [
+   25
+  ],
+  "name": "벨벳 레드 립스틱",
+  "price": 24000,
+  "retail": null,
+  "img": "p15.jpg"
+ },
+ {
+  "code": "p16",
+  "product_no_temp": 27,
+  "group": "rec",
+  "cates": [
+   25
+  ],
+  "name": "실키 루스 파우더 & 퍼프",
+  "price": 27000,
+  "retail": null,
+  "img": "p16.jpg"
+ },
+ {
+  "code": "p17",
+  "product_no_temp": 28,
+  "group": "new",
+  "cates": [
+   25,
+   27
+  ],
+  "name": "네온 아이라이너 펜슬 12색",
+  "price": 18000,
+  "retail": 24000,
+  "img": "p17.jpg"
+ },
+ {
+  "code": "p18",
+  "product_no_temp": 29,
+  "group": "best",
+  "cates": [
+   25
+  ],
+  "name": "소프트 메이크업 브러시 세트",
+  "price": 42000,
+  "retail": null,
+  "img": "p18.jpg"
+ },
+ {
+  "code": "p19",
+  "product_no_temp": 30,
+  "group": "rec",
+  "cates": [
+   26
+  ],
+  "name": "비비드 네일 컬러 (웜)",
+  "price": 12000,
+  "retail": null,
+  "img": "p19.jpg"
+ },
+ {
+  "code": "p20",
+  "product_no_temp": 31,
+  "group": "new",
+  "cates": [
+   26
+  ],
+  "name": "파스텔 네일 컬러 (쿨)",
+  "price": 12000,
+  "retail": null,
+  "img": "p20.jpg"
+ },
+ {
+  "code": "p21",
+  "product_no_temp": 32,
+  "group": "best",
+  "cates": [
+   26
+  ],
+  "name": "실크 리페어 헤어 오일",
+  "price": 26000,
+  "retail": null,
+  "img": "p21.jpg"
+ },
+ {
+  "code": "p22",
+  "product_no_temp": 33,
+  "group": "rec",
+  "cates": [
+   26,
+   27
+  ],
+  "name": "프로 이온 헤어 드라이어",
+  "price": 89000,
+  "retail": 109000,
+  "img": "p22.jpg"
+ },
+ {
+  "code": "p23",
+  "product_no_temp": 34,
+  "group": "new",
+  "cates": [
+   26
+  ],
+  "name": "비치 선케어 키트",
+  "price": 33000,
+  "retail": null,
+  "img": "p23.jpg"
+ },
+ {
+  "code": "p24",
+  "product_no_temp": 35,
+  "group": "best",
+  "cates": [
+   26
+  ],
+  "name": "보태니컬 바디 크림",
+  "price": 28000,
+  "retail": null,
+  "img": "p24.jpg"
+ },
+ {
+  "code": "p25",
+  "product_no_temp": 36,
+  "group": "rec",
+  "cates": [
+   26,
+   27
+  ],
+  "name": "네일 컬러 5종 세트",
+  "price": 25000,
+  "retail": 32000,
+  "img": "p25.jpg"
+ },
+ {
+  "code": "p26",
+  "product_no_temp": 37,
+  "group": "new",
+  "cates": [
+   26
+  ],
+  "name": "세라믹 브러시 홀더",
+  "price": 15000,
+  "retail": null,
+  "img": "p26.jpg"
+ },
+ {
+  "code": "p27",
+  "product_no_temp": 38,
+  "group": "best",
+  "cates": [
+   25
+  ],
+  "name": "파우더 퍼프 3종",
+  "price": 8000,
+  "retail": null,
+  "img": "p27.jpg"
+ },
+ {
+  "code": "p28",
+  "product_no_temp": 39,
+  "group": "rec",
+  "cates": [
+   24
+  ],
+  "name": "내추럴 페이셜 솝",
+  "price": 12000,
+  "retail": null,
+  "img": "p28.jpg"
+ },
+ {
+  "code": "p29",
+  "product_no_temp": 40,
+  "group": "new",
+  "cates": [
+   26
+  ],
+  "name": "라탄 비치 파우치",
+  "price": 19000,
+  "retail": null,
+  "img": "p29.jpg"
+ },
+ {
+  "code": "p30",
+  "product_no_temp": 41,
+  "group": "best",
+  "cates": [
+   25,
+   27
+  ],
+  "name": "에센셜 메이크업 기프트 세트",
+  "price": 59000,
+  "retail": 72000,
+  "img": "p30.jpg"
+ }
+]
