@@ -140,3 +140,75 @@
 2. **메인 "장면 속 상품"** : `index.html` 의 `data-prd` 가 임시 번호 12 · 13 · 18 · 20 · 21 · 23 · 29 · 37 · 39 다.
    실제 번호는 **모두 1 작다** (11 · 12 · 17 · 19 · 20 · 22 · 28 · 36 · 38). `#cz-looks-data` 도 같이 바꾼다.
 3. 스킨 반영 후 메인 "포토리뷰" 칸에서 사진이 보이는지 확인 (기본 스킨 상태에서는 칸 자체가 없다)
+
+## 13. 분류 이름 · 게시판 켜기 (2026-09-30, eppum902)
+
+### 상품 분류 이름 바꾸기 — 스크립트로 되는 방법
+
+메뉴얼에는 "트리는 사람이 직접 클릭해야 한다"고 적혀 있었지만, **dynatree API 로 선택하면 스크립트로 된다.**
+
+```js
+// 상품 분류 관리 화면 (/disp/admin/shop1/product/categorymanage)
+const tree = $.ui.dynatree.getNode(document.querySelector('.dynatree-contents')).tree;
+tree.activateKey('24');                       // key = 분류번호. 이러면 오른쪽 폼이 채워진다
+await sleep(1800);
+const f = document.getElementById('eCategoryInfoForm');
+f.category_name.value = '스킨케어';
+['input','change','keyup','blur'].forEach(t => f.category_name.dispatchEvent(new Event(t,{bubbles:true})));
+f.querySelector('[name="is_display[1]"][value=T]').checked = true;   // 진열함
+document.getElementById('eSubmitBtn').click();                        // alert "분류정보가 저장되었습니다."
+```
+
+| 번호 | 바꾼 이름 | 진열 |
+|---|---|---|
+| 24 | 스킨케어 | O |
+| 25 | 메이크업 | O |
+| 26 | 바디/헤어 | O |
+| 27 | SALE | O |
+| 28 | 전체 상품 | O |
+| 29 ~ 41 | (이름 그대로) 옛 패션 중·소·상세분류 | **X (미진열)** |
+
+- 중·소분류 13개는 지우지 않고 **미진열**로만 바꿨다. 목록 화면 위의 `(중분류) Jackets …` 링크가 사라진다.
+- 프론트 `/exec/front/Product/SubCategory` 는 **캐시가 남아 옛 이름이 한동안 보인다.** 확인은 관리자 트리나 실제 목록 화면(`/product/list.html?cate_no=24`)의 제목으로 한다.
+
+### 게시판 — 이미 다 있고, "사용"만 꺼져 있었다
+
+새 계정에는 게시판 13개가 **처음부터 다 만들어져 있다.** 없는 게 아니라 꺼져 있는 것이므로 **새로 만들면 안 된다.**
+(새로 만들면 `board_no` 가 101 · 1001 · 3001 처럼 엉뚱한 번호로 붙어 스킨 링크와 안 맞는다)
+
+관리자 화면 주소 : **게시판 관리 목록** `/admin/php/shop1/b/board_admin_l.php` · **게시판 설정** `/admin/php/shop1/b/board_admin_c.php?mode=modify&board_no=<번호>`
+(`/disp/admin/shop1/board/boardmanage` 는 빈 화면이 나온다. 옛 `/admin/php/…` 주소를 써야 한다)
+
+> ⚠ **값이 두 개다.** 목록의 "표시/표시 안함"(`use_board`) 만 켜면 화면에서 `선택하신 게시판은 사용할 수 없습니다.` 가 뜬다.
+> **`is_using_board` = T** 도 같이 켜야 한다. (정상 게시판 1번과 폼 값을 통째로 비교해서 찾았다)
+
+```js
+// 게시판 설정 화면을 숨긴 iframe 에 띄우고
+for (const n of ['is_using_board','use_board']) {
+  const t = f.querySelector('input[name='+n+'][value=T]'); t.click(); t.checked = true;
+  f.querySelector('input[name='+n+'][value=F]').checked = false;
+}
+if (!f.max_file_size.value || f.max_file_size.value === '0') f.max_file_size.value = '3';   // 첨부 용량이 0이면 저장이 막힌다
+// 저장 버튼 : img[onclick*=check_submit] → 제출 데이터를 가로채 fetch 로 POST
+```
+
+이번에 켠 것 : **3 이용안내 FAQ**(커뮤니티 → 자주묻는질문) · **2 뉴스/이벤트**(`store-content.js` 의 `cms.boardNo` = 2, `?edit=1` 화면 편집이 쓰는 게시판)
+
+### 새 계정 게시판 번호 (eppum902 실제)
+
+| 번호 | 이름 | 상태 | 쓰는 곳 |
+|---|---|---|---|
+| 1 | 공지사항 | 사용 | 커뮤니티 → 공지사항 |
+| 2 | 뉴스/이벤트 | **이번에 켬** | `?edit=1` 화면 편집 (`cms.boardNo`) |
+| 3 | 이용안내 FAQ | **이번에 켬** | 커뮤니티 → 자주묻는질문 |
+| 4 | 상품 사용후기 | 사용 | 리뷰 메뉴 · 메인 포토리뷰 · 상품 카드 |
+| 5 | 자유게시판 | 사용 | 저널 섹션 더보기 |
+| 6 | 상품 Q&A | 사용 | 커뮤니티 → 상품문의 |
+| 7 | 자료실 | 꺼짐 | 기본 게시판 메인(`board/index.html`)에만 있음 — 안 써도 된다 |
+| 8 | 갤러리 | 사용 | 기본 게시판 메인 |
+| 9 · 101 · 1001 · 1002 · 3001 | 1:1 맞춤상담 · 상품자유 · 한줄메모 · 자유2 · 자유3 | 꺼짐 | 안 씀 |
+
+### 확인
+
+상단 메뉴의 분류 · 게시판 링크 16개를 모두 열어 `<title>` 확인 — 전부 정상
+(전체 상품 · 스킨케어 · 메이크업 · 바디/헤어 · SALE · 리뷰 · 공지사항 · 자주묻는질문 · 상품문의)
