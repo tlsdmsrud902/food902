@@ -2,15 +2,15 @@
 #   python3 docs/pack.py <내려받은 백업.tar.gz> <이미지 서버 번호 pg…>
 #   → _deploy/<백업과 같은 이름>.tar.gz
 # 원본 백업의 폴더 · 주문서 바로가기(심볼릭 링크)는 그대로 두고, 파일은 우리 스킨(skin1)으로 바꾼다.
-# 스킨 이미지(/SkinImg/beauty/)는 복구 파일에서 빼고, 파일업로더 주소로 바꿔 쓴다.
+# 스킨 이미지(/SkinImg/food/)는 복구 파일에서 빼고, 파일업로더 주소로 바꿔 쓴다.
 import io, os, re, sys, tarfile, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SKIN = os.path.join(ROOT, 'eppum902_s2_260925195134_d_skin1_E', 'skin1')
+SKIN = os.path.join(ROOT, 'food902_s2_260925195134_d_skin1_E', 'skin1')
 ORIG, PG = sys.argv[1], sys.argv[2]
-IMG = 'https://ecimg.cafe24img.com/%s/eppum902/beauty/' % PG
+IMG = 'https://ecimg.cafe24img.com/%s/food902/food/' % PG
 TEXT = ('.html', '.js', '.css', '.json', '.txt', '.xml')
-SKIP_DIR = 'SkinImg/beauty/'          # 파일업로더에 따로 올림
+SKIP_DIR = 'SkinImg/food/'          # 파일업로더에 따로 올림
 
 src = tarfile.open(ORIG)
 members = src.getmembers()
@@ -26,8 +26,9 @@ for d, _, fs in os.walk(SKIN):
         data = open(os.path.join(d, f), 'rb').read()
         if rel.endswith(TEXT):
             t = data.decode('utf-8')
-            # jsDelivr 주소(…/skin1/SkinImg/beauty/)는 그대로 두고, 스킨 경로만 파일업로더 주소로
-            t = re.sub(r'(?<!skin1)/SkinImg/beauty/', IMG, t)
+            # jsDelivr 주소(…/skin1/SkinImg/food/)는 그대로 두고, 스킨 경로만 파일업로더 주소로
+            t = re.sub(r'(?<!skin1)/SkinImg/food/', IMG, t)
+            t = t.replace('PG_NUMBER', PG)   # ez 설정 등에 남겨 둔 이미지 서버 번호 자리
             data = t.encode('utf-8')
         ours[rel] = data
 
