@@ -887,10 +887,14 @@
   // 기억해 둔 내용이 없으면(저장 직후가 여기다. 저장하면 이 기억을 지운다) : 게시판을 읽어 와야 하는데
   //   예전에는 1.2초 뒤 무조건 가림을 걷어서, 다 읽기 전에 "수정 전 사진"이 보였다가 나중에 바뀌었다.
   //   그래서 다 읽을 때까지(최대 6초) 계속 가린다.
+  //   편집 모드(?edit=1)도 가린다. 편집 모드는 기억해 둔 내용을 쓰지 않고 매번 게시판을 새로 읽어서,
+  //   예전에는 가림 없이 "수정 전 사진"이 몇 초 보였다가 저장한 사진으로 바뀌었다. (저장 → 새로고침 할 때마다)
+  //   기억해 둔 내용이 오래됐을 때(TTL 지남)도 다시 읽는 동안 가린다 — 그 사이 바뀐 사진이 있으면 옛 사진이 먼저 보이므로.
   var salePage = /\/product\/list\.html/.test(location.pathname) && (qs.match(/[?&]cate_no=(\d+)/) || [])[1] === String((SC.sale || {}).categoryNo || 27);
-  if (BOARD && !EDIT && (/^\/(index\.html)?$/.test(location.pathname) || salePage)) {
+  if (BOARD && (/^\/(index\.html)?$/.test(location.pathname) || salePage)) {
     html.classList.add('cms-wait');
-    state.hold = !(lsGet(CACHE_KEY) || {}).map;   // 기억해 둔 내용이 없으면 다 읽을 때까지 붙잡는다
+    var cached = lsGet(CACHE_KEY);
+    state.hold = EDIT || !(cached && cached.map) || Date.now() - cached.t >= TTL;  // 게시판을 읽을 예정이면 다 읽을 때까지 붙잡는다
     setTimeout(function () { unwait(true); }, state.hold ? 6000 : 1200); // 게시판을 못 읽어도 언젠가는 반드시 걷는다
   }
   // 영역 숨기기·첫 방문 가림 규칙 (메인·세일 등 어느 페이지에서나)
