@@ -506,7 +506,9 @@
     placeUnits(want);
   }
 
-  var state = { map: null, applied: false, waiters: [], orderMoved: false, smooth: false };
+  var state = { map: null, applied: false, waiters: [], orderMoved: false, smooth: false, hold: false };
+  // 가림 걷기. state.hold 가 켜져 있으면(게시판을 아직 읽는 중) 걷지 않는다.
+  function unwait(force) { if (force) state.hold = false; if (!state.hold) html.classList.remove('cms-wait'); }
   function sections() { return Array.from(document.querySelectorAll('[data-cms]')); }
   function names() { return sections().map(function (s) { return s.getAttribute('data-cms'); }).concat(orderName() ? [orderName()] : []).sort(function (a, b) { return norm(b).length - norm(a).length; }); }
   function knownLabels(sec) {
@@ -537,7 +539,7 @@
       try { applyOrder(parse(map[on].content, { 순서: 1 }).fields[norm('순서')]); } catch (e) {}
     }
     state.applied = true;
-    html.classList.remove('cms-wait');
+    unwait();
     var w = state.waiters; state.waiters = [];
     w.forEach(function (fn) { try { fn(); } catch (e) {} });
     document.dispatchEvent(new CustomEvent('eppum:cms', { detail: map }));
@@ -871,20 +873,25 @@
         load(names(), c && c.map, reread).then(function (map) {
           var same = c && JSON.stringify(c.map) === JSON.stringify(map);
           lsSet(CACHE_KEY, { t: Date.now(), tb: reread ? Date.now() : c.tb, map: map });
-          if (!same || !state.applied || EDIT) { state.applied = false; applyAll(map); }
-        }).catch(function () { html.classList.remove('cms-wait'); });
-      }
-    }
+          state.hold = false;   // 다 읽었으니 이제 가림을 걷어도 된다
+          if (!same || !state.applied || EDIT) { state.applied = false; applyAll(map); } else unwait();
+        }).catch(function () { unwait(true); });
+      } else unwait(true);
+    } else unwait(true);
     if (EDIT && home) startEdit();
     if (BOARD_PAGE) loadEditor();
   }
-  // 바꿀 글자·사진을 잠깐(최대 1.2초) 가려 기본값이 번쩍이지 않게 한다.
-  // 캐시가 있을 때도 가린다 — 캐시 적용은 DOMContentLoaded 뒤라서, 그 전에 HTML 의 기본 사진이 한 번 그려진다.
-  // (캐시가 있으면 applyAll 이 곧바로 이 가림을 걷으므로 눈에 띄는 지연은 없다)
+  // 바꿀 글자·사진을 가려 기본값(스킨에 들어 있던 사진·문구)이 먼저 보이지 않게 한다.
+  //
+  // 기억해 둔 내용이 있으면 : DOMContentLoaded 직후 바로 채워지므로 그때 가림을 걷는다. (거의 지연 없음)
+  // 기억해 둔 내용이 없으면(저장 직후가 여기다. 저장하면 이 기억을 지운다) : 게시판을 읽어 와야 하는데
+  //   예전에는 1.2초 뒤 무조건 가림을 걷어서, 다 읽기 전에 "수정 전 사진"이 보였다가 나중에 바뀌었다.
+  //   그래서 다 읽을 때까지(최대 6초) 계속 가린다.
   var salePage = /\/product\/list\.html/.test(location.pathname) && (qs.match(/[?&]cate_no=(\d+)/) || [])[1] === String((SC.sale || {}).categoryNo || 27);
   if (BOARD && !EDIT && (/^\/(index\.html)?$/.test(location.pathname) || salePage)) {
     html.classList.add('cms-wait');
-    setTimeout(function () { html.classList.remove('cms-wait'); }, 1200);
+    state.hold = !(lsGet(CACHE_KEY) || {}).map;   // 기억해 둔 내용이 없으면 다 읽을 때까지 붙잡는다
+    setTimeout(function () { unwait(true); }, state.hold ? 6000 : 1200); // 게시판을 못 읽어도 언젠가는 반드시 걷는다
   }
   // 영역 숨기기·첫 방문 가림 규칙 (메인·세일 등 어느 페이지에서나)
   if (BOARD && document.head) {
