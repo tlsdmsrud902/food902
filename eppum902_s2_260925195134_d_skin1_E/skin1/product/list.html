@@ -1057,7 +1057,7 @@ html.st-sale-on #contents .sl-end__sub {
 		event.hidden = false;
 		/* 게시판 화면 관리(beauty-cms.js)의 '세일 타이머' 글이 들어온 뒤에 그린다 */
 		var startTimer = function () { initSaleTimer((window.STORE_CONTENT && window.STORE_CONTENT.sale && window.STORE_CONTENT.sale.timer) || {}); };
-		if (window.EPPUM_CMS) window.EPPUM_CMS.ready(startTimer, 1200); else startTimer();
+		if (window.EPPUM_CMS) window.EPPUM_CMS.ready(startTimer, 6000); else startTimer();
 
 		/* 세일 상단 이벤트 마감 타이머 (플립 시계) : 종료 시각은 store-content.js 의 sale.timer.endAt (한국시간) */
 		function initSaleTimer(t) {
@@ -1142,7 +1142,7 @@ function runCoupon() {
 	var cards = '';
 	for (var i = 0; i < 3; i++) {
 		cards += '<button type="button" class="sl-cp__card" data-i="' + i + '" aria-label="쿠폰 카드 ' + (i + 1) + '" disabled>'
-			+ '<span class="sl-cp__face sl-cp__front"><img class="sl-cp__art" src="/SkinImg/beauty/'+['card-skincare','card-makeup','sq-red'][i]+'.webp" alt="'+['세럼과 모델','립글로스','레드 립스틱 발색'][i]+'"><span class="sl-cp__logo" role="img" aria-label="eppum"><b>eppum</b></span><i>A LITTLE GIFT FOR YOU</i></span>'
+			+ '<span class="sl-cp__face sl-cp__front"><img class="sl-cp__art" src="'+esc((cfg.cards&&cfg.cards[i])||'/SkinImg/beauty/'+['card-skincare','card-makeup','sq-red'][i]+'.webp')+'" alt="'+['세럼과 모델','립글로스','레드 립스틱 발색'][i]+'"><span class="sl-cp__logo" role="img" aria-label="eppum"><b>eppum</b></span><i>A LITTLE GIFT FOR YOU</i></span>'
 			+ '<span class="sl-cp__face sl-cp__back"><span class="sl-cp__logo sl-cp__logo--back" role="img" aria-label="eppum"><b>BEAUTY</b><em>PIA</em></span><strong class="sl-cp__pct">?</strong><span class="sl-cp__nm"></span></span></button>';
 	}
 	box.innerHTML = '<div class="sl-cp__in">'
@@ -1312,7 +1312,7 @@ function runCoupon() {
 	refreshStock();
 	loadRemain().then(loadInfo).then(function () { fillNotes(); return member(); }).then(start).catch(function () { msg('잠시 후 다시 시도해 주세요'); });
 }
-if (window.EPPUM_CMS) window.EPPUM_CMS.ready(runCoupon, 1500); else runCoupon();
+if (window.EPPUM_CMS) window.EPPUM_CMS.ready(runCoupon, 6000); else runCoupon();
 }());
 </script>
 <div class="sl-head" id="stSaleItems" data-st-sale data-cms="세일 상품 제목" data-cms-help="상품은 관리자 › 상품에서 세일 분류에 넣은 상품이 그대로 나와요. 여기서는 제목만 바꿔요.">

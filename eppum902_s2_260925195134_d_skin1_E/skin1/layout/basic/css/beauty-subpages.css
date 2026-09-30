@@ -6,6 +6,8 @@
 .beauty-menu-hero nav a[aria-current=page]{background:#304234;border-color:#304234;color:#fff!important;-webkit-text-fill-color:#fff}
 .beauty-menu-hero>div{position:relative;z-index:1}.beauty-menu-hero:after{background:linear-gradient(90deg,var(--menu-paper),transparent 75%)!important}
 .beauty-menu-hero.beauty-page-hero>img{opacity:0}.beauty-menu-hero.beauty-page-hero.is-ready>img{opacity:1;transition:opacity .25s ease}
+/* 배너 글자도 준비될 때까지 가린다 (기본 문구가 보였다가 바뀌지 않게). 아래 분류 메뉴(nav)는 가리지 않는다 */
+.beauty-menu-hero.beauty-page-hero:not(.is-ready)>div>small,.beauty-menu-hero.beauty-page-hero:not(.is-ready)>div>h1,.beauty-menu-hero.beauty-page-hero:not(.is-ready)>div>p{visibility:hidden}
 @media(max-width:767px){.beauty-menu-hero.beauty-page-hero{min-height:540px;padding:28px 22px 255px}.beauty-menu-hero.beauty-page-hero>img{height:250px;top:auto;bottom:0;object-position:85% center}.beauty-menu-hero.beauty-page-hero:after{inset:auto 0 195px;height:65px;background:linear-gradient(var(--menu-paper),transparent)!important}.beauty-menu-hero.beauty-page-hero h1{font-size:35px;letter-spacing:-1.5px;margin:16px 0}.beauty-menu-hero.beauty-page-hero nav{gap:6px;margin-top:18px}.beauty-menu-hero.beauty-page-hero nav a{padding:7px 10px;font-size:11px}}
 html.st-sale-on #contents .sl-cp__logo{filter:none!important}
 html.st-sale-on #contents .sl-cp__btn{background:#304234!important}

@@ -17,8 +17,12 @@
   var BOARD = CFG.boardNo === 0 ? 0 : (Number(CFG.boardNo) || 2);
   var TTL = (CFG.cacheMinutes != null ? Number(CFG.cacheMinutes) : 10) * 60000;
   var PREFIX = CFG.titlePrefix || '[메인 화면]';
-  // 페이지마다 영역이 달라 기억도 페이지별로 (메인 / 세일 / 그 밖의 경로)
-  var PAGE_KEY = /\/product\/list\.html/.test(location.pathname) ? 'list' + ((location.search.match(/[?&]cate_no=(\d+)/) || [])[1] || '') : (location.pathname.replace(/\/index\.html$/, '/') || '/');
+  // 상품 목록·검색·게시판(세일 분류 제외)은 맨 위 큰 배너(beauty/submenu-hero.html) 하나만 바뀌므로 기억을 함께 쓴다
+  //  → 한 곳에서 읽어 두면 다른 분류·게시판으로 옮겨도 바로 보인다
+  var CATE = (location.search.match(/[?&]cate_no=(\d+)/) || location.pathname.match(/^\/category\/[^\/]+\/(\d+)/) || [])[1] || '';
+  var HERO_PAGE = /^\/(product\/(list|search)\.html|category\/|board\/)/.test(location.pathname) && CATE !== String((SC.sale || {}).categoryNo || 27);
+  // 그 밖에는 페이지마다 영역이 달라 기억도 페이지별로 (메인 / 세일 / 그 밖의 경로)
+  var PAGE_KEY = HERO_PAGE ? 'sub' : /\/product\/list\.html/.test(location.pathname) ? 'list' + CATE : (location.pathname.replace(/\/index\.html$/, '/') || '/');
   var CACHE_KEY = 'eppum-cms-v2-' + BOARD + '-' + PAGE_KEY, DRAFT_KEY = 'eppum-cms-draft';
   var html = document.documentElement;
   var qs = location.search;
@@ -404,6 +408,27 @@
     };
   }
   function saleObj(key) { return function () { var s = SC.sale = SC.sale || {}; return (s[key] = s[key] || {}); }; }
+  var POPUP_MAX = 5, KAKAO_KEY = 'eppum-cms-kakao';
+  /* 세일 쿠폰 뽑기 카드 앞면 사진 3장 (product/list.html 의 runCoupon 이 sale.coupon.cards 를 쓴다) */
+  function withCards(base) {
+    return {
+      labels: base.labels,
+      draft: function () {
+        var d = base.draft(), cards = saleObj('coupon')().cards || [], shown = document.querySelectorAll('#stSaleCoupon .sl-cp__art');
+        d.items = [0, 1, 2].map(function (i) {
+          var im = shown[i];
+          return { label: '카드 앞면 사진', img: cards[i] || (im && (im.currentSrc || im.src)) || '', size: [1086, 1448], fields: [] };
+        });
+        return d;
+      },
+      apply: function (data) {
+        base.apply(data);
+        var o = saleObj('coupon')(), cards = (o.cards || []).slice();
+        data.items.forEach(function (it, i) { if (it && it.imgs[0] && i < 3) cards[i] = it.imgs[0]; });
+        o.cards = cards;
+      }
+    };
+  }
   /* 상품 목록·검색·게시판 맨 위 큰 배너 (beauty/submenu-hero.html 의 window.EPPUM_MENU_HERO) */
   var HERO_KEYS = [['all', '전체상품'], ['skincare', '스킨케어 분류'], ['makeup', '메이크업 분류'], ['body', '바디·헤어 분류'], ['review', '리뷰 게시판'], ['notice', '공지사항 게시판'], ['faq', '자주묻는질문 게시판'], ['qna', '상품문의 게시판']];
   var HERO_FIELDS = [['작은 제목', 2], ['제목', 3], ['설명', 4], ['사진 설명', 1]];
@@ -444,18 +469,39 @@
     saleTimer: configAdapter(saleObj('timer'), [
       ['보이기', 'enabled', 'bool'], ['문구', 'label'], ['마감 시각', 'endAt'], ['끝났을 때 문구', 'endedText'], ['배경색', 'bg'], ['글자색', 'fg']
     ], '마감 시각은 한국시간 「2026-10-31 23:59」처럼 써요. 색은 #색코드(예: #e11d48)이고, 비우면 기본 색이에요.'),
-    saleCoupon: configAdapter(saleObj('coupon'), [
+    saleCoupon: withCards(configAdapter(saleObj('coupon'), [
       ['보이기', 'enabled', 'bool'], ['영문 작은 글', 'eyebrow'], ['제목', 'title'], ['제목 강조 단어', 'titleHl'], ['리본 문구', 'kicker'],
       ['말풍선', 'bubble'], ['말풍선 강조 단어', 'bubbleEm'], ['남은 쿠폰 제목', 'stockTitle'], ['남은 쿠폰 안내', 'stockNote'],
       ['유의사항 제목', 'notesTitle'], ['유의사항', 'notes', 'lines']
-    ], '쿠폰 번호·수량·할인율은 관리자 › 프로모션 › 쿠폰과 store-content.js 의 sale.coupon 에서 정해요. 여기서는 화면 글자만 바꿔요. 유의사항은 한 줄에 하나씩, {period}·{usecon} 은 쿠폰의 사용기간·사용조건으로 자동으로 바뀌어요.'),
+    ], '쿠폰 번호·수량·할인율은 관리자 › 프로모션 › 쿠폰과 store-content.js 의 sale.coupon 에서 정해요. 여기서는 화면 글자와 카드 앞면 사진 3장만 바꿔요. 유의사항은 한 줄에 하나씩, {period}·{usecon} 은 쿠폰의 사용기간·사용조건으로 자동으로 바뀌어요.')),
+    // 오른쪽 아래 떠 있는 카카오톡 버튼 (layout.html 의 [data-s9="kakao"]). 모든 페이지에 쓰도록 이 브라우저에도 기억해 둔다
+    kakao: {
+      labels: ['카카오톡 채널 주소'],
+      draft: function () {
+        return {
+          note: '카카오톡 채널 관리자센터(center-pf.kakao.com) › 채널 › 채널 홈 주소(https://pf.kakao.com/_xxxx)를 붙여 넣어요. 1:1 채팅으로 바로 열려면 주소 끝에 /chat 을 붙여요. 비우면 카카오톡 채널 첫 화면으로 연결돼요.',
+          fields: [['카카오톡 채널 주소', (SC.floating || {}).kakao || '']], items: []
+        };
+      },
+      apply: function (data) {
+        var v = data.fields[norm('카카오톡 채널 주소')];
+        if (v == null) return;
+        var f = SC.floating = SC.floating || {};
+        f.kakao = safeUrl(v);
+        lsSet(KAKAO_KEY, f.kakao);
+        var a = document.querySelector('[data-s9="kakao"]');
+        if (a) a.href = f.kakao || 'https://pf.kakao.com/';
+      }
+    },
     popup: {
       draft: function () {
         var c = SC.popup || {}, s = c.slides || [];
         return {
           fields: [['보이기', c.enabled === false ? '아니오' : '예'], ['넘김 간격(초)', String(c.interval != null ? c.interval : 4)]],
-          items: s.map(function (x) {
-            return { img: x.image, fields: [['배지', x.badge], ['작은 글', x.kicker], ['제목', x.title], ['설명', x.text], ['버튼', x.button], ['링크', x.link], ['마감 시각', x.type === 'timer' ? (x.endAt || (SC.sale && SC.sale.timer && SC.sale.timer.endAt) || '') : '']] };
+          // 「칸을 늘리려면」·「최대 N장」 은 편집 창이 [복사해서 추가]·[삭제] 버튼을 켜는 신호
+          note: '팝업은 최대 ' + POPUP_MAX + '장까지 넣을 수 있어요. 칸을 늘리려면 번호 묶음의 [복사해서 추가]를, 줄이려면 [삭제]를 눌러요. 마감 시각을 적으면(예: 2026-10-31 23:59) 그 장에 남은 시간 타이머가 붙고, 비우면 타이머 없는 팝업이에요.',
+          items: s.slice(0, POPUP_MAX).map(function (x) {
+            return { img: x.image, size: [1672, 941], fields: [['배지', x.badge], ['작은 글', x.kicker], ['제목', x.title], ['설명', x.text], ['버튼', x.button], ['링크', x.link], ['마감 시각', x.type === 'timer' ? (x.endAt || (SC.sale && SC.sale.timer && SC.sale.timer.endAt) || '') : '']] };
           })
         };
       },
@@ -463,7 +509,7 @@
         var c = SC.popup = SC.popup || {}, f = data.fields;
         if (f[norm('보이기')] != null) c.enabled = !isOff(f[norm('보이기')]);
         if (f[norm('넘김 간격(초)')] != null && !isNaN(parseFloat(f[norm('넘김 간격(초)')]))) c.interval = parseFloat(f[norm('넘김 간격(초)')]);
-        var list = data.items.filter(Boolean);
+        var list = data.items.filter(Boolean).slice(0, POPUP_MAX);
         if (!list.length) return;
         var old = c.slides || [];
         c.slides = list.map(function (it, i) {
@@ -508,7 +554,13 @@
 
   var state = { map: null, applied: false, waiters: [], orderMoved: false, smooth: false, hold: false };
   // 가림 걷기. state.hold 가 켜져 있으면(게시판을 아직 읽는 중) 걷지 않는다.
-  function unwait(force) { if (force) state.hold = false; if (!state.hold) html.classList.remove('cms-wait'); }
+  // 안전장치로 억지로 걷을 때는 기다리던 코드(목록 위 배너 등)도 그때 그린다.
+  function unwait(force) {
+    if (force) state.hold = false;
+    if (state.hold) return;
+    html.classList.remove('cms-wait');
+    if (force) { var w = state.waiters; state.waiters = []; w.forEach(function (fn) { try { fn(); } catch (e) {} }); }
+  }
   function sections() { return Array.from(document.querySelectorAll('[data-cms]')); }
   function names() { return sections().map(function (s) { return s.getAttribute('data-cms'); }).concat(orderName() ? [orderName()] : []).sort(function (a, b) { return norm(b).length - norm(a).length; }); }
   function knownLabels(sec) {
@@ -637,6 +689,32 @@
   }
 
   var EDIT_CSS = '.cms-edit [data-cms]{outline:2px dashed #ff5a36;outline-offset:-2px;position:relative}'
+    // 카카오톡 상담 연결 창
+    + '.cms-kk{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(20,18,16,.45);font:14px/1.6 Pretendard,system-ui,sans-serif;color:#1f1d1a}'
+    + '.cms-kk__card{width:min(460px,100%);background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}'
+    + '.cms-kk__t{display:block;font-size:18px;margin-bottom:10px}.cms-kk ol{margin:0 0 8px;padding-left:20px}.cms-kk ol li{list-style:decimal!important}.cms-kk ol a{color:#c2410c;text-decoration:underline}'
+    + '.cms-kk__tip{margin:0 0 12px;font-size:13px;color:#6b635b}'
+    + '.cms-kk__in{width:100%;box-sizing:border-box;height:44px;padding:0 12px;border:1px solid #d6cfc7;border-radius:10px;font:inherit}.cms-kk__in:focus{outline:2px solid #fee500;border-color:#c9b400}'
+    + '.cms-kk__err{margin:6px 0 0;font-size:13px;color:#dc2626}'
+    + '.cms-kk__btns{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.cms-kk__btns button{height:40px;padding:0 16px;border:1px solid #d6cfc7;border-radius:10px;background:#fff;font:600 14px/1 inherit;cursor:pointer}'
+    + '.cms-kk__btns .is-main{background:#fee500;border-color:#fee500;color:#191600}.cms-kk__btns button:disabled{opacity:.5;cursor:default}'
+    + '.cms-kk__card{max-height:calc(100vh - 32px);overflow:auto}.cms-kk__now{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#f6f3ef;font-size:13px}'
+    + '.cms-kk__how{margin:0 0 14px;padding:12px 14px;border:1px solid #eee7df;border-radius:10px;font-size:13px}.cms-kk__how>b{display:block;margin-bottom:4px}.cms-kk__how ol{margin:0}'
+    + '.cms-kk__lab{display:block;margin:0 0 6px;font-weight:700}.cms-kk__row{display:flex;align-items:center;border:1px solid #d6cfc7;border-radius:10px;overflow:hidden}'
+    + '.cms-kk__row span{padding:0 4px 0 12px;color:#8a8178;white-space:nowrap}.cms-kk__row .cms-kk__in{border:0;border-radius:0;padding-left:2px}'
+    + '.cms-kk__chk{display:block;margin-top:10px;font-size:13px;cursor:pointer}.cms-kk__chk input{margin:0 6px 0 0;vertical-align:-2px}'
+    + '.cms-kk__btns span{flex:1}.cms-kk__btns .is-off{color:#dc2626;border-color:#f3c4c4}'
+    + '.cms-kk__lead{margin:0 0 10px;font-size:14px}.cms-kk__how{background:#fcfaf7}.cms-kk__how>b{font-size:14px}'
+    + '.cms-kk__sub{margin:10px 0 2px;font-weight:700;font-size:13px}.cms-kk__eg{display:inline-block;margin-top:2px;padding:2px 8px;border-radius:6px;background:#fff7cc;font-size:12px}'
+    + '.cms-kk__note{margin:10px 0 0;padding-top:8px;border-top:1px dashed #e5ddd3;font-size:12px;color:#6b635b}'
+    + '.cms-kk__hint{margin:6px 0 0;font-size:12px;color:#8a8178}.cms-kk__preview{margin:6px 0 0;padding:6px 10px;border-radius:8px;background:#eef8ee;font-size:13px;word-break:break-all}'
+    + '.cms-kk__chk span{color:#8a8178;font-size:12px}.cms-kk__lab--last{margin:14px 0 0;font-size:13px}'
+    + '.cms-kk__more{margin:0 0 10px;border:1px solid #eee7df;border-radius:10px;font-size:13px}.cms-kk__more summary{padding:9px 12px;cursor:pointer;font-weight:700;list-style:none}'
+    + '.cms-kk__more summary::-webkit-details-marker{display:none}.cms-kk__more summary::before{content:"▸ ";color:#c2410c}.cms-kk__more[open] summary::before{content:"▾ "}'
+    + '.cms-kk__more>p,.cms-kk__more>ol,.cms-kk__more>ul{margin:0 12px 10px}.cms-kk__more ol,.cms-kk__more ul{padding-left:20px}.cms-kk__more ul li{list-style:disc!important;margin-bottom:4px}.cms-kk__more a{color:#c2410c;text-decoration:underline}'
+    // 편집 모드 : 노란 카카오톡 버튼 옆에 "눌러서 연결 설정" 표시
+    + '.cms-edit [data-s9="kakao"][data-cms]{overflow:visible!important}'
+    + '.cms-edit [data-s9="kakao"][data-cms]::after{content:"✏️ 눌러서 연결 설정";position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);padding:5px 10px;border-radius:999px;background:#1f1d1a;color:#fff;font:600 12px/1.2 Pretendard,system-ui,sans-serif;white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}'
     // 숨긴 영역 : 편집 모드에서는 원래 모양 그대로 두고 위에 흐린 막 + 「숨김」 표시 (투명도를 쓰면 등장 효과 규칙과 부딪힌다)
     + '.cms-off-veil{position:absolute;inset:0;z-index:55;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(255,255,255,.62) 0 14px,rgba(255,255,255,.78) 14px 28px)}'
     + '.cms-edit [data-cms-order]{position:relative;outline:2px dashed #8a6d5d;outline-offset:-2px}'
@@ -694,7 +772,10 @@
     bar.querySelector('.cms-bar__min').addEventListener('click', function () { var m = bar.classList.toggle('is-min'); this.textContent = m ? '펼치기' : '접기'; });
     document.body.appendChild(bar);
     if (!BOARD) { bar.firstChild.innerHTML = '<b>화면 관리가 꺼져 있어요.</b> store-content.js 의 cms.boardNo 를 확인하세요.'; return; }
-    function open(sec) { openPost(sec.getAttribute('data-cms'), draft(sec)); }
+    function open(sec) {
+      if (sec.getAttribute('data-cms-adapter') === 'kakao') { openKakao(sec); return; }
+      openPost(sec.getAttribute('data-cms'), draft(sec));
+    }
     // 지금 화면 내용을 초안으로 넘긴다 (새 글이면 그대로 채우고, 저장된 글이 비어 있을 때도 이것으로 다시 채운다)
     // d.use : 저장된 글보다 이 초안을 먼저 쓴다 (섹션 순서처럼 편집 모드에서 바꾼 내용을 넘길 때)
     function openPost(name, d) {
@@ -742,9 +823,160 @@
       });
     }
     // 순서를 옮기면 저장 버튼이 눈앞에 나온다 : 화면 위 가운데 떠 있는 버튼 + 각 섹션의 [순서] 옆 [저장] + 아래 막대
+    // 새 창을 띄우지 않고 화면 뒤(보이지 않는 iframe)에서 글쓰기 창을 열어 자동 저장한다 → done(성공 여부)
+    var saving = false;
+    function silentSave(name, d, done) {
+      if (saving) return false;
+      var post = state.map && state.map[name], all = lsGet(DRAFT_KEY) || {};
+      all[name] = { subject: d.subject, html: d.html, t: Date.now(), use: true, autosave: true };
+      lsSet(DRAFT_KEY, all);
+      saving = true;
+      var f = document.createElement('iframe'), loads = 0, over = false;
+      f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+      f.style.cssText = 'position:fixed;left:-10000px;top:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none';
+      function finish(ok, why) {
+        if (over) return;
+        over = true; saving = false;
+        setTimeout(function () { f.remove(); }, 0);
+        // 처음 저장한 글이면 글 번호를 받아 두어 다음 저장은 그 글을 고친다
+        if (ok) load([name], null, true).then(function (m) { if (m[name]) { state.map = state.map || {}; state.map[name] = m[name]; } }).catch(function () {});
+        // 카페24가 짧은 시간에 요청이 몰리면 보안 확인을 요구한다 → 사람이 직접 확인하도록 안내
+        if (why === 'blocked') { done(false, why); alert('카페24 보안 확인이 필요해 저장하지 못했어요. 새 창에서 게시판(/board/free/list.html?board_no=' + BOARD + ')을 열어 확인을 마친 뒤 다시 저장해 주세요.'); return; }
+        done(ok);
+      }
+      f.addEventListener('load', function () {
+        loads++;
+        var path = '';
+        // 저장 창 안의 안내·확인 창은 띄우지 않는다 (저장이 안 되면 아래 시간 제한으로 알린다)
+        try { var w = f.contentWindow; path = w.location.pathname; w.alert = function () {}; w.confirm = function () { return true; }; } catch (e) {}
+        // 다른 주소로 넘어갔으면(카페24 보안 확인 페이지 등) 저장 못 한 것
+        if (!path) { finish(false, 'blocked'); return; }
+        // 글쓰기·수정 화면을 벗어나면(글 보기·목록으로 넘어가면) 저장된 것
+        if (loads > 1 && !/\/(write|modify)\.html$/.test(path)) finish(true);
+      });
+      f.src = (post ? '/board/free/modify.html?board_act=edit&no=' + post.no + '&board_no=' + BOARD : '/board/free/write.html?board_no=' + BOARD) + '&cms=' + encodeURIComponent(name);
+      document.body.appendChild(f);
+      setTimeout(function () { finish(false); }, 25000);
+      return true;
+    }
     function saveOrder() {
-      openPost(orderName(), orderDraft());
-      toast('새 창에서 순서를 저장하고 있어요. 저장이 끝나면 이 화면을 새로고침하세요.');
+      if (!silentSave(orderName(), orderDraft(), function (ok, why) {
+        orderSaving(false);
+        if (!ok) { if (why !== 'blocked') alert('섹션 순서를 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); return; }
+        orderClean();
+        alert('섹션 순서가 변경되었습니다.');
+      })) return;
+      orderSaving(true);
+    }
+    /* 카카오톡 상담 버튼 : 새 창 대신 화면 안 설정 창 (안내 + 주소 칸 + 저장) */
+    function openKakao(sec) {
+      var old = document.querySelector('.cms-kk'); if (old) old.remove();
+      var cur = (SC.floating || {}).kakao || '';
+      var box = document.createElement('div'); box.className = 'cms-kk'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+      // 저장된 주소 → 채널 아이디(_xxxx) · 1:1 채팅 여부
+      var m = String(cur).match(/pf\.kakao\.com\/(_[A-Za-z0-9]+)(\/chat)?/i), curId = m ? m[1] : '', curChat = !!(m && m[2]);
+      box.innerHTML = '<div class="cms-kk__card"><b class="cms-kk__t">카카오톡 상담 버튼 연결</b>'
+        + '<p class="cms-kk__lead">화면 오른쪽 아래 <b>노란 말풍선 버튼</b>을 손님이 누르면, 여기서 연결한 가게 카카오톡으로 상담이 이어져요.</p>'
+        + '<p class="cms-kk__now">' + (curId ? '✅ 지금 연결된 채널 : <b>' + esc(curId) + '</b>' + (curChat ? ' · 누르면 1:1 채팅이 열려요' : ' · 누르면 채널 소개 화면이 열려요') : '⚪ 아직 연결된 채널이 없어요. 지금은 버튼을 누르면 카카오톡 채널 첫 화면만 나와요.') + '</p>'
+        + '<details class="cms-kk__more"><summary>카카오톡 채널이 뭔가요?</summary>'
+        + '<p>가게용 카카오톡 계정이에요. 손님이 채널을 친구로 추가하거나 1:1 채팅으로 문의를 남기면, 사장님은 관리자센터나 휴대폰의 <b>카카오톡 채널 관리자 앱</b>에서 답할 수 있어요. 만들고 쓰는 건 무료예요.</p>'
+        + '<p>개인 카카오톡 아이디나 오픈채팅방과는 달라요. 여기에는 <b>pf.kakao.com/_</b> 로 시작하는 채널 주소를 넣어요.</p></details>'
+        + '<details class="cms-kk__more"><summary>채널이 아직 없어요 — 새로 만들기</summary><ol>'
+        + '<li><a href="https://center-pf.kakao.com/" target="_blank" rel="noopener">카카오톡 채널 관리자센터 ↗</a>에 카카오 계정으로 로그인해요. (가게 공용 계정을 쓰면 직원과 함께 관리하기 편해요)</li>'
+        + '<li><b>[새 채널 만들기]</b>를 눌러요.</li>'
+        + '<li>채널 이름(예: eppum 뷰티), 프로필 사진(가게 로고), 카테고리를 넣고 확인을 눌러요.</li>'
+        + '<li>만든 뒤 아래 <b>「꼭 켜 둘 설정 두 가지」</b>를 확인해요.</li></ol></details>'
+        + '<details class="cms-kk__more"><summary>꼭 켜 둘 설정 두 가지</summary><ol>'
+        + '<li><b>채널 공개</b> : 꺼져 있으면 손님에게 "찾을 수 없는 채널"로 나와요. 관리자센터 왼쪽 메뉴 <b>[관리] → [상세 설정]</b>에서 채널 공개와 검색 허용을 켜요.</li>'
+        + '<li><b>1:1 채팅</b> : 꺼져 있으면 손님이 채팅을 보낼 수 없어요. 같은 화면(또는 <b>[채팅]</b> 메뉴)에서 1:1 채팅을 켜요.</li></ol>'
+        + '<p>메뉴 이름은 카카오 화면이 바뀌면 조금 다를 수 있어요. 비슷한 이름을 찾아 주세요.</p></details>'
+        + '<div class="cms-kk__how">'
+        + '<b>1단계 · 가게 카카오톡 채널 주소 복사하기</b>'
+        + '<p class="cms-kk__sub">💻 컴퓨터에서</p><ol>'
+        + '<li><a href="https://center-pf.kakao.com/" target="_blank" rel="noopener">카카오톡 채널 관리자센터 열기 ↗</a>를 누르고, 가게 카카오 계정으로 로그인해요.</li>'
+        + '<li>채널 목록에서 우리 가게 채널을 눌러요.</li>'
+        + '<li>첫 화면이나 왼쪽 메뉴 <b>[채널] → [채널 정보]</b>에서 <b>채널 URL</b>을 찾아 복사해요.<br><span class="cms-kk__eg">이렇게 생긴 주소예요 → http://pf.kakao.com/_TsIAE</span></li>'
+        + '</ol>'
+        + '<p class="cms-kk__sub">📱 휴대폰에서</p><ol>'
+        + '<li>카카오톡에서 우리 가게 채널 프로필을 열어요.</li>'
+        + '<li>오른쪽 위 <b>공유</b> 버튼 → <b>URL 복사</b>를 눌러요.</li>'
+        + '</ol>'
+        + '<p class="cms-kk__note">채널이 없다면 관리자센터에서 <b>[새 채널 만들기]</b>로 먼저 만들어 주세요. 채널을 <b>공개</b>로 두고, <b>채팅</b>을 켜 두어야 손님과 대화할 수 있어요.</p>'
+        + '</div>'
+        + '<label class="cms-kk__lab" for="cmsKkId">2단계 · 복사한 주소 붙여 넣기</label>'
+        + '<input id="cmsKkId" type="text" class="cms-kk__in" placeholder="예: http://pf.kakao.com/_TsIAE" autocomplete="off" spellcheck="false">'
+        + '<p class="cms-kk__hint">주소 전체를 붙여 넣어도 되고, 끝부분(_TsIAE)만 넣어도 돼요.</p>'
+        + '<p class="cms-kk__preview" hidden></p>'
+        + '<label class="cms-kk__chk"><input type="checkbox" data-kk-chat> 버튼을 누르면 <b>바로 1:1 채팅창</b>이 열리게 할게요 <span>(끄면 채널 소개 화면이 먼저 나와요)</span></label>'
+        + '<p class="cms-kk__err" hidden></p>'
+        + '<p class="cms-kk__lab cms-kk__lab--last">3단계 · [미리 열어 보기]로 확인한 뒤 [저장]을 눌러요.</p>'
+        + '<p class="cms-kk__hint">새 창에 우리 가게 채널(또는 채팅 화면)이 뜨면 맞는 주소예요. [저장]을 누르면 10초쯤 뒤 "연결되었습니다" 알림이 나오고, 그때부터 모든 페이지의 노란 버튼이 이 채널로 연결돼요.</p>'
+        + '<details class="cms-kk__more"><summary>잘 안 될 때</summary><ul>'
+        + '<li><b>"찾을 수 없는 채널"이 떠요</b> → 주소를 다시 복사해 붙여 넣고, 「꼭 켜 둘 설정」의 <b>채널 공개</b>가 켜져 있는지 확인해요.</li>'
+        + '<li><b>채팅 입력칸이 안 보여요</b> → <b>1:1 채팅</b>이 꺼져 있어요. 켜거나, 위 체크박스를 끄고 채널 소개 화면으로 연결해요.</li>'
+        + '<li><b>휴대폰에서 누르면 카카오톡 앱이 열려요</b> → 정상이에요. 손님도 그렇게 대화를 시작해요.</li>'
+        + '<li><b>저장했는데 버튼이 예전 곳으로 가요</b> → 화면을 새로고침해 보세요. 다른 손님 화면에는 길게는 10분 뒤에 바뀌어요.</li>'
+        + '<li><b>채널을 바꾸고 싶어요</b> → 새 주소를 넣고 다시 [저장]해요. <b>연결을 끊으려면</b> [연결 해지]를 눌러요.</li>'
+        + '<li><b>"보안 확인이 필요해 저장하지 못했어요"가 떠요</b> → 새 창에서 쇼핑몰을 한 번 열어 카페24 확인을 마친 뒤 다시 저장해요.</li>'
+        + '</ul></details>'
+        + '<div class="cms-kk__btns">' + (curId ? '<button type="button" data-kk="off" class="is-off">연결 해지</button>' : '')
+        + '<span></span><button type="button" data-kk="test">미리 열어 보기</button><button type="button" data-kk="cancel">닫기</button><button type="button" data-kk="save" class="is-main">저장</button></div></div>';
+      var inp = box.querySelector('input.cms-kk__in'), chat = box.querySelector('[data-kk-chat]'), err = box.querySelector('.cms-kk__err'), save = box.querySelector('[data-kk=save]'), pv = box.querySelector('.cms-kk__preview');
+      inp.value = curId; chat.checked = curId ? curChat : true;
+      // 입력하는 대로 실제로 연결될 주소를 보여 준다
+      function preview() { var r = check(); pv.hidden = !r.url; if (r.url) pv.innerHTML = '연결될 주소 : <b>' + esc(r.url) + '</b>'; }
+      inp.addEventListener('input', function () { err.hidden = true; preview(); });
+      chat.addEventListener('change', preview);
+      preview();
+      // 아이디만 넣어도, 주소를 통째로 붙여 넣어도 된다 (_ 가 빠졌으면 붙인다)
+      function check() {
+        var v = trim(inp.value), mm = v.match(/pf\.kakao\.com\/(_?[A-Za-z0-9]+)/i), id = mm ? mm[1] : v.replace(/^@/, '');
+        if (!id) return { error: '1단계에서 복사한 채널 주소를 붙여 넣어 주세요.' + (curId ? ' 연결을 끊으려면 [연결 해지]를 누르면 돼요.' : '') };
+        if (/open\.kakao\.com/i.test(v)) return { error: '오픈채팅방 주소예요. 가게 카카오톡 채널 주소(pf.kakao.com/_…)를 넣어 주세요.' };
+        if (id.charAt(0) !== '_') id = '_' + id;
+        if (!/^_[A-Za-z0-9]{2,}$/.test(id)) return { error: '채널 주소를 다시 확인해 주세요. pf.kakao.com/_ 뒤에 영문·숫자가 오는 주소예요. (예: http://pf.kakao.com/_TsIAE)' };
+        return { id: id, url: 'https://pf.kakao.com/' + id + (chat.checked ? '/chat' : '') };
+      }
+      function close() { box.remove(); }
+      function store(url, msg) {
+        var f = SC.floating = SC.floating || {}, prev = f.kakao;
+        f.kakao = url; var d = draft(sec); f.kakao = prev;   // 초안만 새 주소로 만들고, 화면은 저장이 끝난 뒤 바꾼다
+        if (!silentSave(sec.getAttribute('data-cms'), d, function (ok, why) {
+          box.querySelectorAll('.cms-kk__btns button').forEach(function (b) { b.disabled = false; });
+          save.textContent = '저장';
+          if (!ok) { if (why !== 'blocked') alert('카카오톡 연결을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); return; }
+          f.kakao = url; lsSet(KAKAO_KEY, url);
+          var btn = document.querySelector('[data-s9="kakao"]'); if (btn) btn.href = url || 'https://pf.kakao.com/';
+          sec.classList.add('cms-has-post'); paint(); close();
+          alert(msg);
+        })) { alert('다른 내용을 저장하는 중이에요. 잠시 뒤 다시 눌러 주세요.'); return; }
+        box.querySelectorAll('.cms-kk__btns button').forEach(function (b) { b.disabled = true; });
+        save.textContent = '저장하는 중…';
+      }
+      box.addEventListener('click', function (e) {
+        if (e.target === box) { close(); return; }
+        var a = e.target.closest && e.target.closest('[data-kk]'); a = a && a.getAttribute('data-kk'); if (!a) return;
+        if (a === 'cancel') { close(); return; }
+        if (a === 'off') { if (confirm('카카오톡 채널 연결을 해지할까요? 손님이 버튼을 누르면 카카오톡 채널 첫 화면으로 가요.')) store('', '카카오톡 채널 연결을 해지했습니다.'); return; }
+        var r = check();
+        err.hidden = !r.error; err.textContent = r.error || '';
+        if (r.error) { inp.focus(); return; }
+        inp.value = r.id;
+        if (a === 'test') { window.open(r.url, '_blank', 'noopener'); return; }
+        store(r.url, '카카오톡 채널(' + r.id + ')이 연결되었습니다.');
+      });
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') save.click(); if (e.key === 'Escape') close(); });
+      document.body.appendChild(box);
+      inp.focus(); inp.select();
+    }
+    function orderSaving(on) {
+      [saveBtn, floatBox && floatBox.querySelector('button')].forEach(function (b) { if (b) { b.disabled = on; if (on) b.textContent = '저장하는 중…'; } });
+      if (!on) { saveBtn.textContent = saveBtn.classList.contains('is-dirty') ? '↕ 순서 저장하기 (바뀜)' : '↕ 섹션 순서 저장'; if (floatBox) floatBox.querySelector('button').textContent = '순서 저장하기'; }
+    }
+    function orderClean() {
+      saveBtn.classList.remove('is-dirty'); saveBtn.textContent = '↕ 섹션 순서 저장';
+      units().forEach(function (u) { var s = u.__cmsOrder && u.__cmsOrder.querySelector('[data-save]'); if (s) s.hidden = true; });
+      if (floatBox) { floatBox.remove(); floatBox = null; }
     }
     var saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'cms-order-save'; saveBtn.textContent = '↕ 섹션 순서 저장';
     saveBtn.addEventListener('click', saveOrder);
@@ -760,7 +992,9 @@
         document.body.appendChild(floatBox);
       }
     }
-    function label(sec) { return '✏️ ' + sec.getAttribute('data-cms') + ' 고치기 <small>' + (sec.classList.contains('cms-has-post') ? '· 게시판 글 수정' : '· 새 글') + '</small>'; }
+    function label(sec) {
+      if (sec.getAttribute('data-cms-adapter') === 'kakao') return '💬 카카오톡 상담 연결 <small>· ' + ((SC.floating || {}).kakao ? '연결됨' : '연결 안 됨') + '</small>';
+      return '✏️ ' + sec.getAttribute('data-cms') + ' 고치기 <small>' + (sec.classList.contains('cms-has-post') ? '· 게시판 글 수정' : '· 새 글') + '</small>'; }
     function paint() {
       if (state.blocked) {
         bar.firstChild.innerHTML = '<b>화면 관리 게시판(' + BOARD + '번)을 쓸 수 없는 상태예요.</b> 관리자 › 게시판 › 게시판 관리에서 이 게시판의 <b>사용여부 "사용"</b>, <b>표시여부 "표시"</b>, <b>쓰기 권한 "관리자"</b>로 바꾼 뒤 새로고침하세요.';
@@ -775,6 +1009,8 @@
           b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); open(sec); });
         }
         b.innerHTML = label(sec);
+        // 떠 있는 작은 버튼(카카오톡 상담 등)은 [고치기]를 막대에만 단다
+        if (sec.hasAttribute('data-cms-bar')) { b.style.position = 'static'; hiddenBox.appendChild(b); return; }
         if (floating) {
           // 팝업 : 막대에 [고치기]·[열어 보기], 떠 있는 팝업 안에도 [고치기]
           b.style.position = 'static'; hiddenBox.appendChild(b);
@@ -827,6 +1063,13 @@
       copyText(x + ' ' + y);
       toast('이 자리 : 가로 ' + x + '% · 세로 ' + y + '%  → "' + x + ' ' + y + '" 복사됨 (상품번호 뒤에 붙여 넣으세요)');
     }, true);
+    // 편집 모드에서는 오른쪽 아래 노란 카카오톡 버튼을 눌러도 채널로 가지 않고 연결 설정 창을 연다
+    document.addEventListener('click', function (e) {
+      var k = e.target.closest && e.target.closest('[data-s9="kakao"][data-cms]');
+      if (!k) return;
+      e.preventDefault(); e.stopPropagation();
+      openKakao(k);
+    }, true);
     paint();
     document.addEventListener('eppum:cms', paint);
   }
@@ -840,7 +1083,7 @@
   }
   function loadEditor() {
     var s = document.createElement('script');
-    s.src = '/layout/basic/js/beauty-cms-editor.js?v=' + (CFG.editorVersion || '20260929b');
+    s.src = '/layout/basic/js/beauty-cms-editor.js?v=' + (CFG.editorVersion || '20260930b');
     document.body.appendChild(s);
   }
 
@@ -850,13 +1093,38 @@
     // 코드가 그리는 영역(팝업 등)은 게시판 내용이 들어온 뒤(최대 wait ms) 그린다
     ready: function (fn, wait) {
       if (state.applied || !BOARD || !document.querySelector('[data-cms]')) { fn(); return; }
+      // 게시판을 아직 읽는 중(state.hold)이면 기본값으로 먼저 그리지 않고 다 읽을 때까지(최대 6초) 기다린다
       var done = false, run = function () { if (!done) { done = true; fn(); } };
-      state.waiters.push(run); setTimeout(run, wait || 800);
+      state.waiters.push(run); setTimeout(function () { if (!state.hold) run(); }, wait || 800);
     },
     applyCached: function () {
-      if (state.applied || !BOARD || EDIT) return;
+      if (state.applied || !BOARD) return;
       var c = lsGet(CACHE_KEY);
       if (c && c.map) applyAll(c.map);
+    },
+    // 게시판을 아직 읽는 중이라 기본값·옛 내용을 보이면 안 되는 때
+    holding: function () { return state.hold; },
+    // 화면 관리 영역이 없는 페이지에서 글 하나의 값 하나만 읽는다 (카카오톡 버튼을 눌렀는데 주소를 아직 모를 때)
+    fetchField: function (name, label) {
+      if (!BOARD) return Promise.resolve('');
+      return load([name], null, true).then(function (map) {
+        var p = map[name], known = {};
+        known[norm(label)] = 1;
+        return p ? (parse(p.content, known).fields[norm(label)] || '') : '';
+      }).catch(function () { return ''; });
+    },
+    kakaoKey: KAKAO_KEY,
+    // 영역 하나에만 기억해 둔 최신 내용을 바로 넣는다 (페이지를 다 읽기 전에 그리는 목록 위 배너용).
+    // 기억이 최신이면 true — 그 영역 글이 없으면 기본값이 곧 최종 내용이다.
+    applyCachedSection: function (sec) {
+      if (!BOARD || state.hold || state.applied) return false;
+      var c = lsGet(CACHE_KEY);
+      if (!c || !c.map) return false;
+      var post = c.map[sec.getAttribute('data-cms')], ad = ADAPTERS[sec.getAttribute('data-cms-adapter')];
+      if (post) {
+        try { var data = parse(post.content, knownLabels(sec)); if (ad) ad.apply(data); else applySection(sec, data); } catch (e) { return false; }
+      }
+      return true;
     },
     parse: parse, draft: draft, applyAll: applyAll,
     prefix: PREFIX, draftKey: DRAFT_KEY, sizeWarn: sizeWarn, lsGet: lsGet, lsSet: lsSet, esc: esc, product: product
@@ -881,26 +1149,23 @@
     if (EDIT && home) startEdit();
     if (BOARD_PAGE) loadEditor();
   }
-  // 바꿀 글자·사진을 가려 기본값(스킨에 들어 있던 사진·문구)이 먼저 보이지 않게 한다.
-  //
-  // 기억해 둔 내용이 있으면 : DOMContentLoaded 직후 바로 채워지므로 그때 가림을 걷는다. (거의 지연 없음)
-  // 기억해 둔 내용이 없으면(저장 직후가 여기다. 저장하면 이 기억을 지운다) : 게시판을 읽어 와야 하는데
-  //   예전에는 1.2초 뒤 무조건 가림을 걷어서, 다 읽기 전에 "수정 전 사진"이 보였다가 나중에 바뀌었다.
-  //   그래서 다 읽을 때까지(최대 6초) 계속 가린다.
-  //   편집 모드(?edit=1)도 가린다. 편집 모드는 기억해 둔 내용을 쓰지 않고 매번 게시판을 새로 읽어서,
-  //   예전에는 가림 없이 "수정 전 사진"이 몇 초 보였다가 저장한 사진으로 바뀌었다. (저장 → 새로고침 할 때마다)
-  //   기억해 둔 내용이 오래됐을 때(TTL 지남)도 다시 읽는 동안 가린다 — 그 사이 바뀐 사진이 있으면 옛 사진이 먼저 보이므로.
+  // 바꿀 글자·사진을 게시판 글이 도착할 때까지 가려 기본값(고치기 전 사진)이 번쩍이지 않게 한다.
+  // 저장 직후(편집기가 기억을 지운다)·기억한 내용이 오래됐을 때는 다 읽을 때까지 붙잡고(state.hold),
+  // 그 밖에는(편집 모드 포함) 기억한 내용을 바로 보이고 뒤에서 새로 읽는다. 안전장치로 최대 6초가 지나면 무조건 걷는다.
+  // 목록·검색·게시판(HERO_PAGE)은 맨 위 큰 배너(beauty/submenu-hero.html)만 가린다.
   var salePage = /\/product\/list\.html/.test(location.pathname) && (qs.match(/[?&]cate_no=(\d+)/) || [])[1] === String((SC.sale || {}).categoryNo || 27);
-  if (BOARD && (/^\/(index\.html)?$/.test(location.pathname) || salePage)) {
+  // data-cms-text · data-cms-src 로 그리는 영역이 있는 페이지 : 메인 · 세일 · 가이드 (새 페이지에 data-cms 를 붙이면 여기에 경로를 추가한다)
+  var guidePage = /^\/beauty\/guide\.html$/.test(location.pathname);
+  if (BOARD && (/^\/(index\.html)?$/.test(location.pathname) || salePage || guidePage || HERO_PAGE)) {
     html.classList.add('cms-wait');
     var cached = lsGet(CACHE_KEY);
-    state.hold = EDIT || !(cached && cached.map) || Date.now() - cached.t >= TTL;  // 게시판을 읽을 예정이면 다 읽을 때까지 붙잡는다
+    state.hold = !(cached && cached.map) || Date.now() - cached.t >= TTL;  // 게시판을 읽을 예정이면 다 읽을 때까지 붙잡는다
     setTimeout(function () { unwait(true); }, state.hold ? 6000 : 1200); // 게시판을 못 읽어도 언젠가는 반드시 걷는다
   }
   // 영역 숨기기·첫 방문 가림 규칙 (메인·세일 등 어느 페이지에서나)
   if (BOARD && document.head) {
     var cmsStyle = document.createElement('style');
-    cmsStyle.textContent = 'html:not(.cms-edit) .cms-off{display:none!important}.cms-wait [data-cms] [data-cms-text],.cms-wait [data-cms] [data-cms-src],.cms-wait [data-cms] [data-cms-links],.cms-wait [data-cms][data-cms-text]{visibility:hidden}';
+    cmsStyle.textContent = 'html:not(.cms-edit) .cms-off{display:none!important}.cms-wait [data-cms] [data-cms-text],.cms-wait [data-cms] [data-cms-src],.cms-wait [data-cms] [data-cms-links],.cms-wait [data-cms][data-cms-text],.cms-wait .beauty-menu-hero:not(.is-filled)>img,.cms-wait .beauty-menu-hero:not(.is-filled)>div>:not(nav){visibility:hidden}';
     document.head.appendChild(cmsStyle);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
