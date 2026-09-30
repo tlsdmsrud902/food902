@@ -339,3 +339,61 @@ f.fmax_issue_count.value = '10';              // 선착순 수량
 **남은 확인거리 2개 (운영자 몫)**
 1. 쿠폰 사용기간이 2026-10-03 까지다 → 이벤트 기간에 맞춰 다시 설정
 2. 회원 계정으로 세일 페이지에서 쿠폰 뽑기 1회 테스트
+
+## 17. 편집 모드에서 "수정 전 사진 → 수정한 사진" 이 차례로 보이던 문제 (2026-09-30)
+
+### 증상
+`?edit=1` 로 세일 페이지 사진을 바꾸고 저장 → 새로고침하면, **스킨에 원래 들어 있던 사진이 몇 초 보였다가** 저장한 사진으로 바뀌었다.
+
+### 원인
+`layout/basic/js/<브랜드>-cms.js` 맨 아래의 "가림막(`cms-wait`)" 조건에 `!EDIT` 가 들어 있어서 **편집 모드에서는 가림막이 아예 걸리지 않았다.**
+편집 모드는 기억해 둔 내용(localStorage)을 쓰지 않고 매번 게시판을 새로 읽는데, 그동안 원래 사진이 그대로 보였다.
+또 가림막이 걸리는 경우에도 **1.2초 뒤 무조건** 걷혀서, 게시판을 늦게 읽으면 같은 일이 생길 수 있었다.
+
+### 재현 · 확인 방법 (다른 사이트에서도 그대로)
+같은 쇼핑몰 페이지(콘솔)에서 아래를 실행한다. 세일 페이지를 보이지 않는 iframe 에 띄우고 30ms 마다 큰 화면 사진 상태를 기록한다.
+`SAVED` 는 저장한 사진 파일 이름 일부, `.sl-hero__img` 는 확인할 사진의 선택자.
+
+```js
+async function probe(url, clearCache, SAVED, SEL) {
+  if (clearCache) Object.keys(localStorage).filter(k => /-cms-v\d+-/.test(k)).forEach(k => localStorage.removeItem(k));
+  const ifr = document.createElement('iframe');
+  ifr.style.cssText = 'position:fixed;left:0;top:0;width:1280px;height:900px;opacity:0;pointer-events:none;z-index:-1';
+  document.body.appendChild(ifr);
+  const log = [], t0 = performance.now(); let last = '';
+  ifr.src = url;
+  await new Promise(res => { (function tick() {
+    try {
+      const d = ifr.contentDocument, img = d && d.querySelector(SEL);
+      if (img) {
+        const cs = ifr.contentWindow.getComputedStyle(img), src = img.currentSrc || img.getAttribute('src') || '';
+        const shown = cs.visibility !== 'hidden' && img.complete && img.naturalWidth > 0;
+        const s = (src.includes(SAVED) ? 'NEW' : 'OLD') + '|' + (shown ? '보임' : '가림');
+        if (s !== last) { log.push(Math.round(performance.now() - t0) + 'ms ' + s); last = s; }
+      }
+    } catch (e) {}
+    performance.now() - t0 < 7000 ? setTimeout(tick, 30) : res();
+  })(); });
+  ifr.remove();
+  return { 수정전사진보임: log.some(x => x.includes('OLD|보임')), log };
+}
+await probe('/product/list.html?cate_no=27&edit=1', true, '저장한사진이름일부', '.sl-hero__img');
+```
+
+`수정전사진보임: false` 가 나와야 정상. 고치기 전 eppum 은 편집 모드에서 `1130ms OLD|보임 → 4087ms NEW|보임` 이었다.
+
+### 고친 곳 — `layout/basic/js/<브랜드>-cms.js` 5곳 + `layout.html` 1곳
+
+pet · baby · beauty 스킨의 cms 스크립트는 같은 코드라 **아래 "찾을 글자" 로 찾아 똑같이 바꾸면 된다.** (줄 번호는 사이트마다 다름)
+커밋 : `0da302e` · `64ee851` · `eaf38ae` (최종본 기준 `git diff 0697f30 eaf38ae`)
+
+| # | 찾을 글자 | 하는 일 | 필수 |
+|---|---|---|---|
+| ① | `var state = { map: null, applied: false, waiters: [], orderMoved: false };` | `smooth` · `hold` 추가 + `unwait()` 함수 | 필수 |
+| ② | `applyAll(map) {` 안의 `html.classList.remove('cms-wait');` | `unwait();` 로 (읽는 중이면 안 걷음) | 필수 |
+| ③ | `boot()` 안의 `}).catch(function () { html.classList.remove('cms-wait'); });` | 다 읽으면 `hold` 해제, 실패·안 읽는 경우에도 반드시 걷음 | 필수 |
+| ④ | `if (BOARD && !EDIT && (/^\/(index\.html)?$/` | **`!EDIT` 제거** + 게시판을 읽을 예정이면 다 읽을 때까지 붙잡음 (최대 6초) | **핵심** |
+| ⑤ | `setSrc` 안의 `el.setAttribute('src', url);` | 이미 사진이 보이는 상태에서 다시 바꿀 때는 새 사진을 미리 받아 두고 교체 | 선택 |
+| ⑥ | `layout.html` 의 `<브랜드>-cms.js?v=` | 버전 올리기 (안 올리면 브라우저·CDN 이 옛 파일을 줌) | 필수 |
+
+①~④ 는 서로 이어져 있어서 **한 묶음으로** 바꾼다. ⑤ 는 없어도 이번 문제는 고쳐진다.
