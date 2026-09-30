@@ -78,7 +78,7 @@ const html = `<!doctype html>
     <div class="easy-head"><span class="eyebrow">After purchase · no code</span><h2>구매 후, 이렇게 쉽게 바꿔요</h2><p>코드를 몰라도 돼요.<br><b>바꾸고 싶은 곳의 주황 버튼 → 글 고쳐 쓰기 → 저장</b>, 이게 전부예요.</p></div>
     <div class="ez-try">
       <h3>먼저 딱 한 번 해 볼까요? <span>메인 문구를 우리 가게 문구로</span></h3>
-      <div class="ez-step"><p class="t"><b>1</b><span>쇼핑몰 주소 뒤에 <em>?edit=1</em> 을 붙여 열면, 모든 섹션에 주황색 <em>[고치기]</em> 버튼이 생겨요.</span></p><img src="${S('cms-home')}" alt="고치기 버튼이 생긴 메인 첫 화면"></div>
+      <div class="ez-step"><p class="t"><b>1</b><span>구매 후 알려 드리는 <em>관리자 전용 주소</em>로 쇼핑몰을 열면, 모든 섹션에 주황색 <em>[고치기]</em> 버튼이 생겨요.</span></p><img src="${S('cms-home')}" alt="고치기 버튼이 생긴 메인 첫 화면"></div>
       <div class="ez-step"><p class="t"><b>2</b><span>[고치기]를 누르면 이 창이 열려요. <em>화면에 있던 글이 칸에 그대로</em> 들어 있으니 지우고 새로 쓰면 돼요.</span></p><img src="${S('walk-01-edit')}" alt="첫 화면 편집 창" class="narrow" style="max-height:760px;object-fit:cover;object-position:top"></div>
       <div class="ez-step"><p class="t"><b>3</b><span><em>[저장하기]</em>를 누르면 끝! 쇼핑몰을 새로고침하면 바로 바뀌어 있어요.</span></p><img src="${S('cms-after')}" alt="새 문구로 바뀐 메인 첫 화면"></div>
       <div class="ez-step"><p class="t"><b>+</b><span>사진도 똑같아요. <em>[사진 바꾸기]</em>를 누르고 내 컴퓨터 사진을 고르면 바로 바뀌어요.</span></p><p class="s">권장 크기와 다르면 바로 알려 줘서, 잘린 사진이 올라가지 않아요.</p></div>
